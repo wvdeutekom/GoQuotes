@@ -1,3 +1,5 @@
 package storage
 
-import ()
+func insertQuote(quote *Quote) {
+
+}
