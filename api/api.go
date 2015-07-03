@@ -7,7 +7,10 @@ import (
 )
 
 type Config struct {
-	Port int
+	Port   int
+	DbName string
+	DbURL  string
+	DbPort int
 }
 
 type AppContext struct {
@@ -23,7 +26,10 @@ type Data struct {
 // Initialize new configuration
 func NewConfig() *Config {
 	return &Config{
-		Port: 8000,
+		Port:   8000,
+		DbName: "quotes",
+		DbURL:  "192.168.10.10",
+		DbPort: 28015,
 	}
 }
 
