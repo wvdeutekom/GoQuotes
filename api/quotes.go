@@ -51,12 +51,10 @@ type Response struct {
 }
 
 func (a *AppContext) newQuote(c *echo.Context) error {
-	//Debug
-	//body, _ := ioutil.ReadAll(c.Request().Body)
 
 	r := c.Request()
 
-	r.ParseMultipartForm(5120)
+	r.ParseForm()
 	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
 	if !isValid {
 		log.Println("Invalid form (empty?)\nI'm a doctor Jim, not a magician!")
@@ -71,29 +69,18 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 	if err != nil {
 		fmt.Println(err)
 		//log.Printf("error %s", string.err.Error)
-		// Handle error
 	}
 	fmt.Printf("Filled quote: %#v\n", quote)
 
-	resp := Response{
-		Username: quote.UserName,
-		Text:     "Saving quote: " + quote.Text,
-	}
+	//resp := Response{
+	//	Username: quote.UserName,
+	//	Text:     "Saving quote: " + quote.Text,
+	//}
 
-	fmt.Println("\n\n\n")
+	resp := "Saving quote: " + quote.Text
+
+	fmt.Println("\n\n")
 
 	return c.JSON(http.StatusOK, resp)
 	//return c.String(http.StatusOK, "looks like a new quote to me!")
-}
-
-func valuesToMap(values map[string][]string) map[string]interface{} {
-	ret := make(map[string]interface{})
-
-	for key, value := range values {
-		if len(value) > 0 {
-			ret[key] = value[0]
-		}
-	}
-
-	return ret
 }
