@@ -52,15 +52,71 @@ type Response struct {
 
 func (a *AppContext) newQuote(c *echo.Context) error {
 
+	r := c.Request()
+
+	r.ParseMultipartForm(5120)
+	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
+	if !isValid {
+		log.Println("see ya homies")
+	}
+	//	isCmd := len(r.Form["trigger_word"]) > 0
+
+	fmt.Printf("TRIGGERRR: %s", r.Form["trigger_word"][0])
+
 	body, _ := ioutil.ReadAll(c.Request().Body)
-	fmt.Println("response Body:", string(body))
+	contentType := c.Request().Header.Get("Content-Type")
+
+	log.Printf("form parsed1: ", r.Form)
+	r.ParseForm()
+	log.Printf("form parsed2: ", r.Form)
+	log.Printf("form value§: ", r.FormValue("token"))
+	log.Printf("form value§: ", r.PostFormValue("token"))
+
+	x := r.Form.Get("token")
+	fmt.Printf("param_name: ", x)
+
+	fmt.Printf("request method: %s\n", c.Request().Method)
+	fmt.Printf("formvalue: %s\n", c.Request().FormValue("token"))
+	fmt.Printf("content-type: %s\n", contentType)
+	fmt.Printf("response Body: %s\n", string(body))
+	fmt.Printf("Post form get token: %s\n", c.Request().PostForm.Get("token"))
+	fmt.Printf("Post form get token222: %s\n", c.Request().PostFormValue("token"))
+
+	// var u Quote
+
+	// defer c.Request().Body.Close()
+
+	// if err := json.NewDecoder(c.Request().Body).Decode(&u); err != nil {
+	// 	fmt.Printf("json decoded inside if: %#v\n", u)
+	// }
+
+	// fmt.Printf("json decoded: %#v\n", u)
+
+	// d := form.NewDecoder(c.Request().Body)
+	// if err := d.Decode(&u); err != nil {
+	// 	fmt.Printf("ERROR JIM! ERROR!: ", err)
+	// }
+
+	// fmt.Printf("Decoded: %#v", u)
+
+	// payload := make(map[string]interface{})
+
+	// if strings.Contains(contentType, "form") {
+	// 	fmt.Println("Looks like youre sending a form")
+
+	// 	formData, err := url.ParseQuery(string(body))
+	// 	if err != nil {
+	// 		log.Printf("error parsing form payload %+v\n", err)
+	// 	} else {
+	// 		payload = valuesToMap(formData)
+	// 	}
+	// }
+
+	// fmt.Printf("payload payload paylod: %#v\n", payload)
 
 	quote := new(Quote)
 	decoder := schema.NewDecoder()
-	//r.PostForm is a map of our POST form values
 	err := decoder.Decode(quote, c.Request().PostForm)
-
-	log.Printf("%#v\n", quote)
 
 	if err != nil {
 		fmt.Println(err)
@@ -68,6 +124,7 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 		// Handle error
 	}
 
+	fmt.Printf("THIS ISNT EVEN MY FINAL FORM: %#v\n", quote)
 	//c.Request().ParseForm()
 	//newQ := Quote{
 	//	Token:  c.Request().Form.Get("token"),
@@ -111,6 +168,20 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 		Text:     "JA HALLO!",
 	}
 
+	fmt.Println("\n\n\n")
+
 	return c.JSON(http.StatusOK, resp)
 	//return c.String(http.StatusOK, "looks like a new quote to me!")
+}
+
+func valuesToMap(values map[string][]string) map[string]interface{} {
+	ret := make(map[string]interface{})
+
+	for key, value := range values {
+		if len(value) > 0 {
+			ret[key] = value[0]
+		}
+	}
+
+	return ret
 }

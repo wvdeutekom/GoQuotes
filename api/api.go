@@ -36,4 +36,5 @@ func hello(c *echo.Context) error {
 func Route(e *echo.Echo, a *AppContext) {
 	e.Get("/", hello)
 	e.Post("/quote", a.newQuote)
+	e.Get("/quote", a.newQuote)
 }
