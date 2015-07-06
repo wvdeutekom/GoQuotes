@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
 	"github.com/wvdeutekom/webhookproject/api"
+	"github.com/wvdeutekom/webhookproject/storage"
 )
 
 func main() {
@@ -27,26 +28,31 @@ func main() {
 	}
 	session.SetMaxOpenConns(5)
 
-	// resp, err := r.DB(config.DbName).TableCreate("quote").RunWrite(session)
+	r.DBCreate(config.DbName).Exec(session)
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = r.DB(config.DbName).TableCreate("quote").RunWrite(session)
+	if err != nil {
+		fmt.Print(err)
+	}
+
+	// resp, err = r.DB(config.DbName).Table("quote").Insert(map[string]interface{}{
+	// 	"title":   "Lorem ipsum",
+	// 	"content": "Dolor sit amet",
+	// }).RunWrite(session)
 	// if err != nil {
 	// 	fmt.Print(err)
+	// 	return
 	// }
 
-	resp, err := r.DB(config.DbName).Table("quote").Insert(map[string]interface{}{
-		"title":   "Lorem ipsum",
-		"content": "Dolor sit amet",
-	}).RunWrite(session)
-	if err != nil {
-		fmt.Print(err)
-		return
-	}
-
-	resp, err = r.DB(config.DbName).Table("quote").RunWrite(session)
-	if err != nil {
-		fmt.Print(err)
-		return
-	}
-	fmt.Printf("get stuff! %#v\n", resp)
+	// resp, err = r.DB(config.DbName).Table("quote").RunWrite(session)
+	// if err != nil {
+	// 	fmt.Print(err)
+	// 	return
+	// }
+	// fmt.Printf("get stuff! %#v\n", resp)
 
 	// Middleware
 	echo.Use(mw.Logger())
@@ -54,6 +60,11 @@ func main() {
 
 	appcontext := &api.AppContext{
 		Config: config,
+		Storage: &storage.QuoteStorage{
+			Name:    "quotes",
+			URL:     "192.168.10.10",
+			Session: session,
+		},
 	}
 
 	//Routes

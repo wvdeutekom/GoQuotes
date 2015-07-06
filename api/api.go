@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo"
+	"github.com/wvdeutekom/webhookproject/storage"
 	"log"
 	"net/http"
 )
@@ -14,7 +15,8 @@ type Config struct {
 }
 
 type AppContext struct {
-	Config *Config
+	Config  *Config
+	Storage *storage.QuoteStorage
 }
 
 // Struct used to marshall json

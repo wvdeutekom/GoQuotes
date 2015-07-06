@@ -14,10 +14,10 @@ type Meta struct {
 	Total string
 }
 
-type Response struct {
-	Username string `json:"username,omitempty"`
-	Text     string `json:"text"`
-}
+// type Response struct {
+// 	Username string `json:"username,omitempty"`
+// 	Text     string `json:"text"`
+// }
 
 func (a *AppContext) newQuote(c *echo.Context) error {
 
@@ -41,16 +41,10 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 	}
 	fmt.Printf("Filled quote: %#v\n", quote)
 
-	//resp := Response{
-	//	Username: quote.UserName,
-	//	Text:     "Saving quote: " + quote.Text,
-	//}
-
+	a.Storage.SaveQuote(quote)
 	resp := "Saving quote: " + quote.Text
 
 	fmt.Println("\n\n")
 
-	st.SaveQuote(quote)
 	return c.JSON(http.StatusOK, resp)
-	//return c.String(http.StatusOK, "looks like a new quote to me!")
 }
