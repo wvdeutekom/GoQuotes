@@ -3,8 +3,6 @@ package api
 import (
 	"github.com/labstack/echo"
 	"github.com/wvdeutekom/webhookproject/storage"
-	"log"
-	"net/http"
 )
 
 type Config struct {
@@ -35,14 +33,7 @@ func NewConfig() *Config {
 	}
 }
 
-// Handler
-func hello(c *echo.Context) error {
-	log.Printf("%#v\n", c)
-	return c.String(http.StatusOK, "Hello, ECHO!")
-}
-
 func Route(e *echo.Echo, a *AppContext) {
-	e.Get("/", hello)
 	e.Post("/quote", a.newQuote)
-	e.Get("/quote", a.newQuote)
+	e.Post("/latestquote", a.GetLatestQuote)
 }

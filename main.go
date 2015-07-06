@@ -38,22 +38,6 @@ func main() {
 		fmt.Print(err)
 	}
 
-	// resp, err = r.DB(config.DbName).Table("quote").Insert(map[string]interface{}{
-	// 	"title":   "Lorem ipsum",
-	// 	"content": "Dolor sit amet",
-	// }).RunWrite(session)
-	// if err != nil {
-	// 	fmt.Print(err)
-	// 	return
-	// }
-
-	// resp, err = r.DB(config.DbName).Table("quote").RunWrite(session)
-	// if err != nil {
-	// 	fmt.Print(err)
-	// 	return
-	// }
-	// fmt.Printf("get stuff! %#v\n", resp)
-
 	// Middleware
 	echo.Use(mw.Logger())
 	echo.Use(mw.Recover())

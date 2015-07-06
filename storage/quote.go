@@ -22,7 +22,7 @@ import (
 
 // Quote struct for slash command
 type Quote struct {
-	Token       string `schema:"token"`
+	Token       string `schema:"token" json:"token"`
 	TeamID      string `schema:"team_id"`
 	TeamDomain  string `schema:"team_domain"`
 	ChannelID   string `schema:"channel_id"`
@@ -48,4 +48,12 @@ func (s *QuoteStorage) SaveQuote(quote *Quote) {
 		return
 	}
 	fmt.Printf("get stuff! %#v\n", resp)
+}
+
+func (s *QuoteStorage) GetLatestQuote() Quote {
+	return Quote{
+		UserName: "Wijnand",
+		Text:     "testComment blaat",
+		Command:  "/quote",
+	}
 }
