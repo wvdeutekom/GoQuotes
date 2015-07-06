@@ -7,28 +7,12 @@ import (
 
 	"github.com/gorilla/schema"
 	"github.com/labstack/echo"
+	st "github.com/wvdeutekom/webhookproject/storage"
 )
 
 type Meta struct {
 	Total string
 }
-
-type QuoteJSON struct {
-	Meta *Meta `json:"meta,omitempty"`
-}
-
-// type Quote struct {
-// 	Token       string `json:"token"`
-// 	TeamID      string `json:"team_id"`
-// 	TeamDomain  string `json:"team_domain"`
-// 	ChannelID   string `json:"channel_id"`
-// 	ChannelName string `json:"channel_name"`
-// 	Timestamp   int    `json:"timestamp"`
-// 	UserID      string `json:"user_id"`
-// 	UserName    string `json:"user_name"`
-// 	Text        string `json:"text"`
-// 	TriggerWord string `json:"trigger_word"`
-// }
 
 type Response struct {
 	Username string `json:"username,omitempty"`
@@ -47,7 +31,7 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 
 	fmt.Printf("form:: %s\n", r.Form)
 
-	quote := new(Quote)
+	quote := new(st.Quote)
 	decoder := schema.NewDecoder()
 	err := decoder.Decode(quote, c.Request().PostForm)
 
@@ -66,6 +50,7 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 
 	fmt.Println("\n\n")
 
+	st.SaveQuote(quote)
 	return c.JSON(http.StatusOK, resp)
 	//return c.String(http.StatusOK, "looks like a new quote to me!")
 }

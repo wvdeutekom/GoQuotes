@@ -1,0 +1,11 @@
+#! /bin/bash
+
+# Config file
+projectname="webhookproject"
+hub_username="wvdeutekom"
+
+# Rethinkdb
+rethink_containername="rethink"
+rethink_imagename="latest"
+rethink_hub_repository="rethinkdb"
+declare -a rethink_ports=(28015:28015 29015:29015 8080:8080)
