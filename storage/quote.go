@@ -31,7 +31,7 @@ type Quote struct {
 	UserName    string `schema:"user_name" json:"user_name" gorethink:"user_name"`
 	Text        string `schema:"text" json:"text" gorethink:"text"`
 	Command     string `schema:"command" json:"command" gorethink:"command"`
-	Timestamp   int32  `schema:"-" json"-" gorethink:"timestamp"`
+	Timestamp   int32  `schema:"-" json:"-" gorethink:"timestamp"`
 }
 
 type QuoteStorage struct {
@@ -55,7 +55,7 @@ func (s *QuoteStorage) SaveQuote(quote *Quote) {
 
 func (s *QuoteStorage) GetLatestQuote() Quote {
 
-	rows, err := r.Table("quote").Run(s.Session)
+	rows, err := r.Table("quote").OrderBy(r.Desc("timestamp")).Run(s.Session)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -70,17 +70,4 @@ func (s *QuoteStorage) GetLatestQuote() Quote {
 	fmt.Printf("Fetch one record %#v\n", quote)
 
 	return quote
-
-	// resp, err := r.DB(s.Name).Table("quote").Run(s.Session)
-	// if err != nil {
-	// 	fmt.Print(err)
-	// }
-	// fmt.Printf("get stuff! %#v\n", resp)
-
-	// return resp
-	// return Quote{
-	// 	UserName: "Wijnand",
-	// 	Text:     "testComment blaat",
-	// 	Command:  "/quote",
-	// }
 }
