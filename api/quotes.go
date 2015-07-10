@@ -36,9 +36,7 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 	//Transfer post values to quote variable
 	quote := new(st.Quote)
 	decoder := schema.NewDecoder()
-	err := decoder.Decode(quote, c.Request().PostForm)
-
-	if err != nil {
+	if err := decoder.Decode(quote, c.Request().PostForm); err != nil {
 		fmt.Println(err)
 		//log.Printf("error %s", string.err.Error)
 	}
@@ -90,7 +88,13 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 	//Transfer post values to quote variable
 	quote := new(st.Quote)
 	decoder := schema.NewDecoder()
-	err := decoder.Decode(quote, c.Request().PostForm)
+
+	var err interface{}
+	if r.Method == "GET" {
+		err = decoder.Decode(quote, c.Request().Form)
+	} else {
+		err = decoder.Decode(quote, c.Request().PostForm)
+	}
 
 	if err != nil {
 		fmt.Println(err)
@@ -106,4 +110,11 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, resp)
+}
+
+// Dev stuff
+func (a *AppContext) SendQuote(c *echo.Context) error {
+
+	a.Slack.ChatPostMessage("C02QG1PDQ", "testbericht", nil)
+	return c.JSON(http.StatusOK, "SendQuote fired, sir.")
 }

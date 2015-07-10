@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"code.google.com/p/gcfg"
+
 	r "github.com/dancannon/gorethink"
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
@@ -11,7 +13,21 @@ import (
 	"github.com/wvdeutekom/webhookproject/storage"
 )
 
+type ConfigFile struct {
+	Slack struct {
+		ApiToken string
+	}
+}
+
 func main() {
+
+	var cfg Config
+	if err := gcfg.ReadFileInto(&cfg, "config.gcfg"); err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("MY CONFIG YEAAHHH: %#v\n", cfg)
+
 	config := api.NewConfig()
 	echo := echo.New()
 
@@ -58,3 +74,5 @@ func main() {
 	log.Printf("Starting server on: %s", addr)
 	echo.Run(addr)
 }
+
+func LoadConfiguration()

@@ -47,7 +47,7 @@ func (s *QuoteStorage) SaveQuote(quote *Quote) {
 
 	quote.Timestamp = int32(time.Now().Unix())
 
-	resp, err := r.DB(s.Name).Table("quote").Insert(quote).RunWrite(s.Session)
+	_, err := r.DB(s.Name).Table("quote").Insert(quote).RunWrite(s.Session)
 	if err != nil {
 		fmt.Print(err)
 		return
@@ -81,7 +81,7 @@ func (s *QuoteStorage) SearchQuote(searchString string) Quote {
 
 	var searchTerms string
 	if searchStringArray[0] == "search" && searchStringArray[1] == "quote" {
-		for index, element := range searchStringArray {
+		for index, _ := range searchStringArray {
 			if index == len(searchStringArray)-1 {
 				break
 			}
