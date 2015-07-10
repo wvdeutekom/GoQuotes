@@ -2,8 +2,10 @@ package storage
 
 import (
 	"fmt"
-	r "github.com/dancannon/gorethink"
+	"strings"
 	"time"
+
+	r "github.com/dancannon/gorethink"
 )
 
 // Quote struct for outgoing webhook instead of slash command
@@ -50,7 +52,6 @@ func (s *QuoteStorage) SaveQuote(quote *Quote) {
 		fmt.Print(err)
 		return
 	}
-	fmt.Printf("get stuff! %#v\n", resp)
 }
 
 func (s *QuoteStorage) GetLatestQuote() Quote {
@@ -68,6 +69,42 @@ func (s *QuoteStorage) GetLatestQuote() Quote {
 	}
 
 	fmt.Printf("Fetch one record %#v\n", quote)
+
+	return quote
+}
+
+func (s *QuoteStorage) SearchQuote(searchString string) Quote {
+
+	//Remove trigger words "search" and "quote"
+	searchStringArray := strings.Fields(searchString)
+	fmt.Println("Searchterms: ", searchStringArray)
+
+	var searchTerms string
+	if searchStringArray[0] == "search" && searchStringArray[1] == "quote" {
+		for index, element := range searchStringArray {
+			if index == len(searchStringArray)-1 {
+				break
+			}
+			searchStringArray[index] = searchStringArray[index] + "|"
+		}
+		searchTerms = strings.Join(append(searchStringArray[:0], searchStringArray[2:]...), " ")
+	}
+
+	rows, err := r.Table("quote").Filter(func(quote r.Term) r.Term {
+		return quote.Field("text").Match(searchTerms)
+	}).Run(s.Session)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rows.Close()
+
+	var quote Quote
+	err2 := rows.One(&quote)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
+
+	fmt.Printf("Search result record %#v\n", quote)
 
 	return quote
 }

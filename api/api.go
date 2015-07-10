@@ -36,4 +36,5 @@ func NewConfig() *Config {
 func Route(e *echo.Echo, a *AppContext) {
 	e.Post("/quote", a.newQuote)
 	e.Post("/latestquote", a.GetLatestQuote)
+	e.Post("/searchquote", a.SearchQuote)
 }

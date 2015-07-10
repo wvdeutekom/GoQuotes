@@ -73,3 +73,37 @@ func (a *AppContext) GetLatestQuote(c *echo.Context) error {
 
 	return c.JSON(http.StatusOK, resp)
 }
+
+func (a *AppContext) SearchQuote(c *echo.Context) error {
+
+	r := c.Request()
+
+	//Parse post values
+	r.ParseForm()
+	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
+	if !isValid {
+		log.Println("Invalid form (empty?)\nI'm a doctor Jim, not a magician!")
+	}
+
+	fmt.Printf("form:: %s\n", r.Form)
+
+	//Transfer post values to quote variable
+	quote := new(st.Quote)
+	decoder := schema.NewDecoder()
+	err := decoder.Decode(quote, c.Request().PostForm)
+
+	if err != nil {
+		fmt.Println(err)
+		//log.Printf("error %s", string.err.Error)
+	}
+	fmt.Printf("Filled quote: %#v\n", quote)
+
+	resultQuote := a.Storage.SearchQuote(quote.Text)
+
+	resp := Response{
+		Username: resultQuote.UserName,
+		Text:     resultQuote.Text,
+	}
+
+	return c.JSON(http.StatusOK, resp)
+}
