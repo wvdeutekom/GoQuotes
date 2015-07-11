@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"code.google.com/p/gcfg"
-
 	r "github.com/dancannon/gorethink"
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
@@ -13,29 +11,17 @@ import (
 	"github.com/wvdeutekom/webhookproject/storage"
 )
 
-type ConfigFile struct {
-	Slack struct {
-		ApiToken string
-	}
-}
-
 func main() {
 
-	var cfg Config
-	if err := gcfg.ReadFileInto(&cfg, "config.gcfg"); err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Printf("MY CONFIG YEAAHHH: %#v\n", cfg)
-
-	config := api.NewConfig()
+	config := api.NewConfig("config.gcfg")
 	echo := echo.New()
+	fmt.Printf("MY CONFIG YEAAHHH: %#v\n", config)
 
 	var session *r.Session
 
 	session, err := r.Connect(r.ConnectOpts{
-		Address:  fmt.Sprint(config.DbURL, ":", config.DbPort),
-		Database: config.DbName,
+		Address:  fmt.Sprint(config.Database.URL, ":", config.Database.Port),
+		Database: config.Database.Name,
 		MaxIdle:  10,
 		MaxOpen:  10,
 	})
@@ -44,12 +30,12 @@ func main() {
 	}
 	session.SetMaxOpenConns(5)
 
-	r.DBCreate(config.DbName).Exec(session)
+	r.DBCreate(config.Database.Name).Exec(session)
 	if err != nil {
 		log.Println(err)
 	}
 
-	_, err = r.DB(config.DbName).TableCreate("quote").RunWrite(session)
+	_, err = r.DB(config.Database.Name).TableCreate("quote").RunWrite(session)
 	if err != nil {
 		fmt.Print(err)
 	}
@@ -70,9 +56,7 @@ func main() {
 	//Routes
 	api.Route(echo, appcontext)
 
-	addr := fmt.Sprintf(":%d", config.Port)
+	addr := fmt.Sprintf(":%d", config.App.Port)
 	log.Printf("Starting server on: %s", addr)
 	echo.Run(addr)
 }
-
-func LoadConfiguration()

@@ -22,6 +22,12 @@ import (
 // 	TriggerWord string `schema:"trigger_word"`
 // }
 
+type Database struct {
+	Name string
+	URL  string
+	Port int
+}
+
 // Quote struct for slash command
 type Quote struct {
 	Token       string `schema:"token" json:"token" gorethink:"token"`
