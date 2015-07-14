@@ -19,9 +19,9 @@ type Meta struct {
 }
 
 type Response struct {
-	Username  string  `json:"username,omitempty"`
-	Text      string  `json:"text"`
-	Timestamp float32 `json:"timestamp"`
+	Username  string `json:"username,omitempty"`
+	Text      string `json:"text"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 func (a *AppContext) NewQuote(c *echo.Context) error {
@@ -59,24 +59,14 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 	var quotes []st.Quote
 	var err error
 
+	var query = c.Request.URL.Query().Get("q")
+
 	//Get quote from database
-	quotes, err = a.Storage.FindAllQuotes()
-
-	//quote := a.Storage.GetLatestQuote()
-
-	//convert quote to json
-	//jsonQuote, err := json.Marshal(quotes)
-
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//fmt.Printf("GetQuotes: %s\n\n", string(jsonQuote))
-
-	//resp := Response{
-	//	Username:  quote.UserName,
-	//	Text:      quote.Text,
-	//	Timestamp: quote.Timestamp,
-	//}
+	if query != "" {
+		quotes, err = a.Storage.SearchQuotes(query)
+	} else {
+		quotes, err = a.Storage.FindAllQuotes()
+	}
 
 	fmt.Printf("GetQuotes: %s\n\n", quotes)
 	if err != nil {
