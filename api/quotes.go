@@ -19,9 +19,9 @@ type Meta struct {
 }
 
 type Response struct {
-	Username  string `json:"username,omitempty"`
-	Text      string `json:"text"`
-	Timestamp int32  `json:"timestamp"`
+	Username  string  `json:"username,omitempty"`
+	Text      string  `json:"text"`
+	Timestamp float32 `json:"timestamp"`
 }
 
 func (a *AppContext) NewQuote(c *echo.Context) error {
@@ -42,7 +42,6 @@ func (a *AppContext) NewQuote(c *echo.Context) error {
 	decoder := schema.NewDecoder()
 	if err := decoder.Decode(quote, c.Request().PostForm); err != nil {
 		fmt.Println(err)
-		//log.Printf("error %s", string.err.Error)
 	}
 	fmt.Printf("Filled quote: %#v\n", quote)
 
@@ -81,14 +80,19 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 
 	fmt.Printf("GetQuotes: %s\n\n", quotes)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Error{"Comments could not be found."})
+		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found."})
 	}
 	return c.JSON(http.StatusOK, quotes)
 }
 
 func (a *AppContext) FindOneQuote(c *echo.Context) error {
 
-	return c.JSON(http.StatusOK, "in development")
+	quote, err := a.Storage.FindOneQuote(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found."})
+	}
+
+	return c.JSON(http.StatusOK, quote)
 }
 
 func (a *AppContext) EditQuote(c *echo.Context) error {
