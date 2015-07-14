@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
 	"github.com/wvdeutekom/webhookproject/api"
+	"github.com/wvdeutekom/webhookproject/slack"
 	"github.com/wvdeutekom/webhookproject/storage"
 )
 
@@ -15,7 +16,7 @@ func main() {
 
 	config := api.NewConfig("config.gcfg")
 	echo := echo.New()
-	fmt.Printf("MY CONFIG YEAAHHH: %#v\n", config)
+	slack := slack.New(config.Slack.Token)
 
 	var session *r.Session
 
@@ -45,6 +46,7 @@ func main() {
 	echo.Use(mw.Recover())
 
 	appcontext := &api.AppContext{
+		Slack:  slack,
 		Config: config,
 		Storage: &storage.QuoteStorage{
 			Name:    "quotes",

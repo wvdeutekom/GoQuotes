@@ -14,6 +14,7 @@ func (sl *Slack) ChatPostMessage(channel string, text string, opt *ChatPostMessa
 	uv := sl.buildChatPostMessageUrlValues(opt)
 	uv.Add("channel", channel)
 	uv.Add("text", text)
+	fmt.Printf("DEBUG 1\n")
 
 	body, err := sl.GetRequest(chatPostMessageApiEndpoint, uv)
 	if err != nil {
@@ -51,7 +52,10 @@ type ChatPostMessageAPIResponse struct {
 
 func (sl *Slack) buildChatPostMessageUrlValues(opt *ChatPostMessageOpt) *url.Values {
 	uv := sl.UrlValues()
+	fmt.Printf("DEBUG 4: uv \n", uv)
 	if opt == nil {
+		fmt.Printf("DEBUG 3 empty opt \n")
+
 		return uv
 	}
 
@@ -77,5 +81,6 @@ func (sl *Slack) buildChatPostMessageUrlValues(opt *ChatPostMessageOpt) *url.Val
 		uv.Add("icon_emoji", opt.IconEmoji)
 	}
 
+	fmt.Printf("DEBUG 2: %s \n", uv)
 	return uv
 }

@@ -7,17 +7,17 @@ import (
 const apiBaseUrl = "https://slack.com/api/"
 
 type Slack struct {
-	token string
+	Token string
 }
 
 func New(token string) *Slack {
 	return &Slack{
-		token: token,
+		Token: token,
 	}
 }
 
 func (sl *Slack) UrlValues() *url.Values {
 	uv := url.Values{}
-	uv.Add("token", sl.token)
+	uv.Add("token", sl.Token)
 	return &uv
 }

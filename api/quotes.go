@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,16 +10,21 @@ import (
 	st "github.com/wvdeutekom/webhookproject/storage"
 )
 
+type Error struct {
+	Message string
+}
+
 type Meta struct {
 	Total string
 }
 
 type Response struct {
-	Username string `json:"username,omitempty"`
-	Text     string `json:"text"`
+	Username  string `json:"username,omitempty"`
+	Text      string `json:"text"`
+	Timestamp int32  `json:"timestamp"`
 }
 
-func (a *AppContext) newQuote(c *echo.Context) error {
+func (a *AppContext) NewQuote(c *echo.Context) error {
 
 	r := c.Request()
 
@@ -51,25 +55,50 @@ func (a *AppContext) newQuote(c *echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func (a *AppContext) GetLatestQuote(c *echo.Context) error {
+//GET /quotes
+func (a *AppContext) GetQuotes(c *echo.Context) error {
+	var quotes []st.Quote
+	var err error
 
 	//Get quote from database
-	quote := a.Storage.GetLatestQuote()
+	quotes, err = a.Storage.FindAllQuotes()
+
+	//quote := a.Storage.GetLatestQuote()
 
 	//convert quote to json
-	jsonQuote, err := json.Marshal(quote)
+	//jsonQuote, err := json.Marshal(quotes)
 
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//fmt.Printf("GetQuotes: %s\n\n", string(jsonQuote))
+
+	//resp := Response{
+	//	Username:  quote.UserName,
+	//	Text:      quote.Text,
+	//	Timestamp: quote.Timestamp,
+	//}
+
+	fmt.Printf("GetQuotes: %s\n\n", quotes)
 	if err != nil {
-		fmt.Println(err)
+		return c.JSON(http.StatusBadRequest, Error{"Comments could not be found."})
 	}
-	fmt.Printf("GetLatestQuote: %s\n\n", string(jsonQuote))
+	return c.JSON(http.StatusOK, quotes)
+}
 
-	resp := Response{
-		Username: quote.UserName,
-		Text:     quote.Text,
-	}
+func (a *AppContext) FindOneQuote(c *echo.Context) error {
 
-	return c.JSON(http.StatusOK, resp)
+	return c.JSON(http.StatusOK, "in development")
+}
+
+func (a *AppContext) EditQuote(c *echo.Context) error {
+
+	return c.JSON(http.StatusOK, "in development")
+}
+
+func (a *AppContext) DeleteQuote(c *echo.Context) error {
+
+	return c.JSON(http.StatusOK, "in development")
 }
 
 func (a *AppContext) SearchQuote(c *echo.Context) error {
@@ -114,7 +143,10 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 
 // Dev stuff
 func (a *AppContext) SendQuote(c *echo.Context) error {
+	fmt.Printf("Sending quote with slack: %s\n", a.Slack)
+	if err := a.Slack.ChatPostMessage("C02QG1PDQ", "Karlo, of jij even je mondtd wilt houden.", nil); err != nil {
+		fmt.Printf("Error sending quote: %s\n", err)
+	}
 
-	a.Slack.ChatPostMessage("C02QG1PDQ", "testbericht", nil)
 	return c.JSON(http.StatusOK, "SendQuote fired, sir.")
 }

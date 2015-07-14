@@ -27,14 +27,8 @@ type Config struct {
 	App struct {
 		Port int
 	}
-	Database struct {
-		Name string
-		URL  string
-		Port int
-	}
-	Slack struct {
-		Token string
-	}
+	Database storage.Database
+	Slack    slack.Slack
 }
 
 type AppContext struct {
@@ -61,7 +55,6 @@ func NewConfig(configFile string) *Config {
 }
 
 func LoadConfig(configFile string) *Config {
-	fmt.Printf("loading config: %s\n", configFile)
 
 	var cfg Config
 	var err error
@@ -80,9 +73,15 @@ func LoadConfig(configFile string) *Config {
 }
 
 func Route(e *echo.Echo, a *AppContext) {
-	e.Post("/quotes", a.newQuote)
-	e.Post("/latestquote", a.GetLatestQuote)
-	e.Post("/searchquote", a.SearchQuote)
-	e.Get("/searchquote", a.SearchQuote)
+	e.Post("/quotes", a.NewQuote)
+	e.Get("/quotes", a.GetQuotes)
+	e.Get("/quotes/:id", a.FindOneQuote)
+	e.Put("/quotes/:id", a.EditQuote)
+	e.Delete("/quotes/:id", a.DeleteQuote)
+
+	//Legacy
+	//	e.Post("/latestquote", a.GetLatestQuote)
+	//	e.Post("/searchquote", a.SearchQuote)
+	//	e.Get("/searchquote", a.SearchQuote)
 	e.Get("/debug", a.SendQuote)
 }

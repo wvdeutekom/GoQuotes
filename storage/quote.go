@@ -22,7 +22,7 @@ import (
 // 	TriggerWord string `schema:"trigger_word"`
 // }
 
-type Database struct {
+type Storage struct {
 	Name string
 	URL  string
 	Port int
@@ -58,6 +58,22 @@ func (s *QuoteStorage) SaveQuote(quote *Quote) {
 		fmt.Print(err)
 		return
 	}
+}
+
+func (s *QuoteStorage) FindAllQuotes() ([]Quote, error) {
+	rows, err := r.DB(s.Name).Table("quote").Run(s.Session)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []Quote
+	err = rows.All(&list)
+	if err == r.ErrEmptyResult {
+		return nil, err
+	}
+
+	return list, nil
 }
 
 func (s *QuoteStorage) GetLatestQuote() Quote {
