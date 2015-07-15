@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/schema"
 	"github.com/labstack/echo"
@@ -24,6 +25,7 @@ type Response struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
+//POST /quotes
 func (a *AppContext) NewQuote(c *echo.Context) error {
 
 	r := c.Request()
@@ -59,11 +61,14 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 	var quotes []st.Quote
 	var err error
 
-	var query = c.Request.URL.Query().Get("q")
+	var query = c.Request().URL.Query().Get("q")
+
+	fmt.Printf("GET PARAMS: %#v\n\n", query)
 
 	//Get quote from database
 	if query != "" {
-		quotes, err = a.Storage.SearchQuotes(query)
+		//Seperate search terms and put them into a string array
+		quotes, err = a.Storage.SearchQuotes(strings.Split(query, ","))
 	} else {
 		quotes, err = a.Storage.FindAllQuotes()
 	}
@@ -75,6 +80,7 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 	return c.JSON(http.StatusOK, quotes)
 }
 
+//GET /quotes/:id
 func (a *AppContext) FindOneQuote(c *echo.Context) error {
 
 	quote, err := a.Storage.FindOneQuote(c.Param("id"))
@@ -90,50 +96,55 @@ func (a *AppContext) EditQuote(c *echo.Context) error {
 	return c.JSON(http.StatusOK, "in development")
 }
 
+//DELETE /quotes/:id
 func (a *AppContext) DeleteQuote(c *echo.Context) error {
 
 	return c.JSON(http.StatusOK, "in development")
 }
 
-func (a *AppContext) SearchQuote(c *echo.Context) error {
-
-	r := c.Request()
-
-	//Parse post values
-	r.ParseForm()
-	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
-	if !isValid {
-		log.Println("Invalid form (empty?)\nI'm a doctor Jim, not a magician!")
-	}
-
-	fmt.Printf("form:: %s\n", r.Form)
-
-	//Transfer post values to quote variable
-	quote := new(st.Quote)
-	decoder := schema.NewDecoder()
-
-	var err interface{}
-	if r.Method == "GET" {
-		err = decoder.Decode(quote, c.Request().Form)
-	} else {
-		err = decoder.Decode(quote, c.Request().PostForm)
-	}
-
-	if err != nil {
-		fmt.Println(err)
-		//log.Printf("error %s", string.err.Error)
-	}
-	fmt.Printf("Filled quote: %#v\n", quote)
-
-	resultQuote := a.Storage.SearchQuote(quote.Text)
-
-	resp := Response{
-		Username: resultQuote.UserName,
-		Text:     resultQuote.Text,
-	}
-
-	return c.JSON(http.StatusOK, resp)
-}
+//func (a *AppContext) SearchQuote(c *echo.Context) error {
+//
+//	r := c.Request()
+//
+//	//Parse post values
+//	r.ParseForm()
+//	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
+//	if !isValid {
+//		log.Println("Invalid form (empty?)\nI'm a doctor Jim, not a magician!")
+//	}
+//
+//	fmt.Printf("form:: %s\n", r.Form)
+//
+//	//Transfer post values to quote variable
+//	quote := new(st.Quote)
+//	decoder := schema.NewDecoder()
+//
+//	var err interface{}
+//	if r.Method == "GET" {
+//		err = decoder.Decode(quote, c.Request().Form)
+//	} else {
+//		err = decoder.Decode(quote, c.Request().PostForm)
+//	}
+//
+//	if err != nil {
+//		fmt.Println(err)
+//		//log.Printf("error %s", string.err.Error)
+//	}
+//	fmt.Printf("Filled quote: %#v\n", quote)
+//
+//	resultQuote, err := a.Storage.SearchQuotes(quote.Text)
+//
+//	if err != nil {
+//		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found."})
+//	}
+//
+//	resp := Response{
+//		Username: resultQuote.UserName,
+//		Text:     resultQuote.Text,
+//	}
+//
+//	return c.JSON(http.StatusOK, resp)
+//}
 
 // Dev stuff
 func (a *AppContext) SendQuote(c *echo.Context) error {
