@@ -17,13 +17,13 @@ type Error struct {
 }
 
 type Meta struct {
-	Total string
+	Authors []string `json:"authors,omitempty"`
+	Github  string   `json:"github,omitempty"`
 }
 
 type Response struct {
-	Username  string `json:"username,omitempty"`
-	Text      string `json:"text"`
-	Timestamp int64  `json:"timestamp"`
+	Data interface{} `json:"data,omitempty"`
+	Meta Meta        `json:"meta,omitempty"`
 }
 
 //POST /quotes
@@ -64,8 +64,6 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 
 	var query = c.Request().URL.Query().Get("q")
 
-	fmt.Printf("GET PARAMS: %#v\n\n", query)
-
 	//Get quote from database
 	if query != "" {
 		//Seperate search terms and put them into a string array
@@ -74,7 +72,6 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 		quotes, err = a.Storage.FindAllQuotes()
 	}
 
-	fmt.Printf("GetQuotes: %s\n\n", quotes)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
@@ -100,7 +97,11 @@ func (a *AppContext) EditQuote(c *echo.Context) error {
 //DELETE /quotes/:id
 func (a *AppContext) DeleteQuote(c *echo.Context) error {
 
-	return c.JSON(http.StatusOK, "in development")
+	if err := a.Storage.DeleteQuote(c.Param("id")); err != nil {
+		return c.JSON(http.StatusNotFound, err)
+	}
+
+	return c.JSON(http.StatusOK, "Quote deleted")
 }
 
 func (a *AppContext) SearchQuote(c *echo.Context) error {
@@ -115,8 +116,6 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Error{"Invalid form, missing arguments", nil})
 	}
 
-	fmt.Printf("form:: %s\n", r.Form)
-
 	//Transfer post values to quote variable
 	quote := new(st.Quote)
 	decoder := schema.NewDecoder()
@@ -124,7 +123,6 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 	if err := decoder.Decode(quote, c.Request().Form); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("Filled quote: %#v\n", quote)
 
 	resultQuote, err := a.Storage.SearchQuotes(strings.Split(quote.Text, ","))
 
@@ -134,7 +132,6 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 
 	quoteText := "\"" + resultQuote[0].Text + "\"" + " ~" + resultQuote[0].UserName
 	if a.Slack.ChatPostMessage(quote.ChannelID, quoteText, nil); err != nil {
-		fmt.Printf("Error sending quote: %s\n", err)
 		return c.JSON(http.StatusBadRequest, Error{"Could not post to Slack channel", err})
 	}
 

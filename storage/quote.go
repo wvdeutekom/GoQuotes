@@ -30,6 +30,7 @@ type Storage struct {
 
 // Quote struct for slash command
 type Quote struct {
+	ID          string `schema:"id" json:"id" gorethink:"id,omitempty"`
 	Token       string `schema:"token" json:"-" gorethink:"token"`
 	TeamID      string `schema:"team_id" json:"team_id" gorethink:"team_id"`
 	TeamDomain  string `schema:"team_domain" json:"team_domain" gorethink:"team_domain"`
@@ -84,7 +85,6 @@ func (s *QuoteStorage) FindOneQuote(id string) (*Quote, error) {
 	if err != nil {
 		return nil, err
 	}
-	//r.DB(s.Name).Table("quote").Filter(r.Row.Field("id").Eq(id)).Run.(s.Session)
 	defer rows.Close()
 
 	var quote Quote
@@ -95,6 +95,7 @@ func (s *QuoteStorage) FindOneQuote(id string) (*Quote, error) {
 
 	return &quote, nil
 }
+
 func (s *QuoteStorage) GetLatestQuote() Quote {
 
 	rows, err := r.Table("quote").OrderBy(r.Desc("timestamp")).Run(s.Session)
@@ -114,6 +115,16 @@ func (s *QuoteStorage) GetLatestQuote() Quote {
 	return quote
 }
 
+func (s *QuoteStorage) DeleteQuote(id string) error {
+
+	_, err := r.DB(s.Name).Table("quote").Get(id).Delete().Run(s.Session)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
 func (s *QuoteStorage) SearchQuotes(searchStrings []string) ([]Quote, error) {
 
 	fmt.Printf("Searchterms: %s\n", searchStrings)
@@ -130,7 +141,7 @@ func (s *QuoteStorage) SearchQuotes(searchStrings []string) ([]Quote, error) {
 	}
 	defer rows.Close()
 
-	var list []Quote
+	list := []Quote{}
 	err2 := rows.All(&list)
 	if err2 != nil {
 		fmt.Println(err2)

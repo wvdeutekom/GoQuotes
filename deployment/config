@@ -8,4 +8,5 @@ hub_username="wvdeutekom"
 rethink_containername="rethink"
 rethink_imagename="latest"
 rethink_hub_repository="rethinkdb"
+rethink_datavolume="datavolume-rethink"
 declare -a rethink_ports=(28015:28015 29015:29015 8080:8080)
