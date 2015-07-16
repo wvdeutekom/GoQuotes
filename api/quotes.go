@@ -75,7 +75,7 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
-	return c.JSON(http.StatusOK, quotes)
+	return c.JSON(http.StatusOK, Response{Data: quotes})
 }
 
 //GET /quotes/:id
@@ -86,7 +86,7 @@ func (a *AppContext) FindOneQuote(c *echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
 
-	return c.JSON(http.StatusOK, quote)
+	return c.JSON(http.StatusOK, Response{Data: quote})
 }
 
 func (a *AppContext) EditQuote(c *echo.Context) error {
