@@ -1,5 +1,5 @@
 #! /bin/bash
-. $(dirname $0)/config
+. ./config
 
 echo "Stopping ${projectname} services.."
 

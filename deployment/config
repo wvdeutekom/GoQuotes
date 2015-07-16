@@ -1,7 +1,8 @@
 #! /bin/bash
 
 # Deployment info
-server="toaster.vdeute.com"
+deploy_server="toaster.vdeute.com"
+deploy_dir="/goquotes"
 
 # Config file
 projectname="webhookproject"
@@ -11,7 +12,7 @@ hub_username="wvdeutekom"
 go_containername="go"
 go_imagename="latest"
 go_hub_repository="go"
-declare -a go_ports=(8000:8000)
+declare -a go_port=8000:8000
 
 # Rethinkdb
 rethink_containername="rethink"
@@ -19,3 +20,7 @@ rethink_imagename="latest"
 rethink_hub_repository="rethinkdb"
 rethink_datavolume="datavolume-rethink"
 declare -a rethink_ports=(28015:28015 29015:29015 8080:8080)
+
+# rethink_ports[0]=28015:28015
+# rethink_ports[1]=29015:29015
+# rethink_ports[2]=8080:8080

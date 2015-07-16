@@ -9,5 +9,5 @@ pullimages () {
 
 # Then stop and delete all containers
 # Run installation script again to boot up all containers
-pullimages && sh ./stopservices.sh 'yes'
-sh ./oneclickinstall.sh
+pullimages && bash ./stopservices.sh 'yes'
+bash ./oneclickinstall.sh
