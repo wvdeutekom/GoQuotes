@@ -2,7 +2,6 @@ FROM google/golang
 
 WORKDIR /gopath/src/github.com/wvdeutekom/webhookproject
 ADD . /gopath/src/github.com/wvdeutekom/webhookproject/
-RUN ls /gopath/src/github.com/wvdeutekom/webhookproject/
 
 # go get all of the dependencies
 RUN go get code.google.com/p/gcfg
