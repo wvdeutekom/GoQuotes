@@ -1,5 +1,5 @@
 #! /bin/bash
-. $(dirname $0)/config
+. $(dirname $0)/../config
 
 echo "Starting up ${rethink_containername}"
 
