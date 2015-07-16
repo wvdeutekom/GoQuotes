@@ -29,7 +29,7 @@ confirm () {
 
 # delete all the relevant docker containers (not the datavolume!)
 deletecontainers () {
-    for i in $(docker ps -a | grep "${rethink_containername}" | cut -f1 -d" "); do
+    for i in $(docker ps -a | grep ${rethink_containername} | grep -v ${rethink_datavolume} | cut -f1 -d" "); do
       echo "deleting $1"
       docker rm $i;
     done
