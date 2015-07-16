@@ -79,6 +79,10 @@ func Route(e *echo.Echo, a *AppContext) {
 	e.Put("/quotes/:id", a.EditQuote)
 	e.Delete("/quotes/:id", a.DeleteQuote)
 
+	//Slack specific api calls, uses incoming x-www-form-urlencoded post data instead of json
+	e.Post("/slack/insertQuote", a.NewQuote)
+	e.Get("/slack/searchQuote", a.SearchQuote)
+
 	//Legacy
 	//	e.Post("/latestquote", a.GetLatestQuote)
 	//	e.Post("/searchquote", a.SearchQuote)

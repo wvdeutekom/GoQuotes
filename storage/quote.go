@@ -116,20 +116,12 @@ func (s *QuoteStorage) GetLatestQuote() Quote {
 
 func (s *QuoteStorage) SearchQuotes(searchStrings []string) ([]Quote, error) {
 
-	//Remove trigger words "search" and "quote"
-	//searchStringArray := strings.Fields(searchString)
 	fmt.Printf("Searchterms: %s\n", searchStrings)
 
-	//var searchTerms string
-	//for index, _ := range searchStrings {
-	//	if index == len(searchStrings)-1 {
-	//		break
-	//	}
-	//	searchStrings[index] = searchStrings[index] + "|"
-	//}
+	//Append the strings into one regex string, e.g. bob|said|bananas
 	searchTerms := strings.Join(searchStrings, "|")
-
 	fmt.Printf("Filtered searchterms: %s\n", searchTerms)
+
 	rows, err := r.Table("quote").Filter(func(quote r.Term) r.Term {
 		return quote.Field("text").Match(searchTerms)
 	}).Run(s.Session)

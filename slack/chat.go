@@ -3,27 +3,22 @@ package slack
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 )
 
 const chatPostMessageApiEndpoint = "chat.postMessage"
 
 func (sl *Slack) ChatPostMessage(channel string, text string, opt *ChatPostMessageOpt) error {
-	fmt.Println("chatpostmessage\n")
 	uv := sl.buildChatPostMessageUrlValues(opt)
 	uv.Add("channel", channel)
 	uv.Add("text", text)
-	fmt.Printf("DEBUG 1\n")
 
 	body, err := sl.GetRequest(chatPostMessageApiEndpoint, uv)
 	if err != nil {
-		fmt.Printf("ChatPostMessage Error: %s\n", err)
 		return err
 	}
 	res := new(ChatPostMessageAPIResponse)
 	err = json.Unmarshal(body, res)
-	fmt.Printf("ChatPostMessage response: %s\n", res)
 	if err != nil {
 		return err
 	}
@@ -52,10 +47,7 @@ type ChatPostMessageAPIResponse struct {
 
 func (sl *Slack) buildChatPostMessageUrlValues(opt *ChatPostMessageOpt) *url.Values {
 	uv := sl.UrlValues()
-	fmt.Printf("DEBUG 4: uv \n", uv)
 	if opt == nil {
-		fmt.Printf("DEBUG 3 empty opt \n")
-
 		return uv
 	}
 
@@ -81,6 +73,5 @@ func (sl *Slack) buildChatPostMessageUrlValues(opt *ChatPostMessageOpt) *url.Val
 		uv.Add("icon_emoji", opt.IconEmoji)
 	}
 
-	fmt.Printf("DEBUG 2: %s \n", uv)
 	return uv
 }

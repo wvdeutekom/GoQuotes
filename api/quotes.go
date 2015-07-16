@@ -13,6 +13,7 @@ import (
 
 type Error struct {
 	Message string
+	Error   error
 }
 
 type Meta struct {
@@ -75,7 +76,7 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 
 	fmt.Printf("GetQuotes: %s\n\n", quotes)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found."})
+		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
 	return c.JSON(http.StatusOK, quotes)
 }
@@ -85,7 +86,7 @@ func (a *AppContext) FindOneQuote(c *echo.Context) error {
 
 	quote, err := a.Storage.FindOneQuote(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found."})
+		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
 
 	return c.JSON(http.StatusOK, quote)
@@ -102,49 +103,43 @@ func (a *AppContext) DeleteQuote(c *echo.Context) error {
 	return c.JSON(http.StatusOK, "in development")
 }
 
-//func (a *AppContext) SearchQuote(c *echo.Context) error {
-//
-//	r := c.Request()
-//
-//	//Parse post values
-//	r.ParseForm()
-//	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
-//	if !isValid {
-//		log.Println("Invalid form (empty?)\nI'm a doctor Jim, not a magician!")
-//	}
-//
-//	fmt.Printf("form:: %s\n", r.Form)
-//
-//	//Transfer post values to quote variable
-//	quote := new(st.Quote)
-//	decoder := schema.NewDecoder()
-//
-//	var err interface{}
-//	if r.Method == "GET" {
-//		err = decoder.Decode(quote, c.Request().Form)
-//	} else {
-//		err = decoder.Decode(quote, c.Request().PostForm)
-//	}
-//
-//	if err != nil {
-//		fmt.Println(err)
-//		//log.Printf("error %s", string.err.Error)
-//	}
-//	fmt.Printf("Filled quote: %#v\n", quote)
-//
-//	resultQuote, err := a.Storage.SearchQuotes(quote.Text)
-//
-//	if err != nil {
-//		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found."})
-//	}
-//
-//	resp := Response{
-//		Username: resultQuote.UserName,
-//		Text:     resultQuote.Text,
-//	}
-//
-//	return c.JSON(http.StatusOK, resp)
-//}
+func (a *AppContext) SearchQuote(c *echo.Context) error {
+
+	r := c.Request()
+
+	//Parse post values
+	r.ParseForm()
+	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
+	if !isValid {
+		log.Println("Invalid form (empty?)\nI'm a doctor Jim, not a magician!")
+		return c.JSON(http.StatusBadRequest, Error{"Invalid form, missing arguments", nil})
+	}
+
+	fmt.Printf("form:: %s\n", r.Form)
+
+	//Transfer post values to quote variable
+	quote := new(st.Quote)
+	decoder := schema.NewDecoder()
+
+	if err := decoder.Decode(quote, c.Request().Form); err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("Filled quote: %#v\n", quote)
+
+	resultQuote, err := a.Storage.SearchQuotes(strings.Split(quote.Text, ","))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
+	}
+
+	quoteText := "\"" + resultQuote[0].Text + "\"" + " ~" + resultQuote[0].UserName
+	if a.Slack.ChatPostMessage(quote.ChannelID, quoteText, nil); err != nil {
+		fmt.Printf("Error sending quote: %s\n", err)
+		return c.JSON(http.StatusBadRequest, Error{"Could not post to Slack channel", err})
+	}
+
+	return echo.NewHTTPError(http.StatusOK, "There's your quote sir!")
+}
 
 // Dev stuff
 func (a *AppContext) SendQuote(c *echo.Context) error {
