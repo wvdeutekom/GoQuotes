@@ -31,11 +31,15 @@ func (a *AppContext) NewQuote(c *echo.Context) error {
 
 	r := c.Request()
 
+	//Add header for angular CORS support
+	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+
 	//Parse post values
 	r.ParseForm()
 	isValid := len(r.Form["text"]) > 0 && len(r.Form["team_id"]) > 0
 	if !isValid {
 		log.Println("Invalid form (empty?)\nI'm a doctor Jim, not a magician!")
+		return c.JSON(http.StatusBadRequest, "Looks like I'm missing some parameters, sir.")
 	}
 
 	fmt.Printf("form:: %s\n", r.Form)
@@ -64,6 +68,9 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 
 	var query = c.Request().URL.Query().Get("q")
 
+	//Add header for angular CORS support
+	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+
 	//Get quote from database
 	if query != "" {
 		//Seperate search terms and put them into a string array
@@ -75,11 +82,15 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
+
 	return c.JSON(http.StatusOK, Response{Data: quotes})
 }
 
 //GET /quotes/:id
 func (a *AppContext) FindOneQuote(c *echo.Context) error {
+
+	//Add header for angular CORS support
+	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
 
 	quote, err := a.Storage.FindOneQuote(c.Param("id"))
 	if err != nil {
