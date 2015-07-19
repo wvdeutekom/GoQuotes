@@ -32,15 +32,15 @@ type Storage struct {
 type Quote struct {
 	ID          string `schema:"id" json:"id" gorethink:"id,omitempty"`
 	Token       string `schema:"token" json:"-" gorethink:"token"`
-	TeamID      string `schema:"team_id" json:"team_id" gorethink:"team_id"`
-	TeamDomain  string `schema:"team_domain" json:"team_domain" gorethink:"team_domain"`
-	ChannelID   string `schema:"channel_id" json:"channel_id" gorethink:"channel_id"`
-	ChannelName string `schema:"channel_name" json:"channel_name" gorethink:"channel_name"`
-	UserID      string `schema:"user_id" json:"user_id" gorethink:"user_id"`
-	UserName    string `schema:"user_name" json:"user_name" gorethink:"user_name"`
-	Text        string `schema:"text" json:"text" gorethink:"text"`
-	Command     string `schema:"command" json:"command" gorethink:"command"`
-	Timestamp   int    `schema:"-" json:"timestamp" gorethink:"timestamp"`
+	TeamID      string `schema:"team_id" json:"team_id,omitempty" gorethink:"team_id"`
+	TeamDomain  string `schema:"team_domain" json:"team_domain,omitempty" gorethink:"team_domain"`
+	ChannelID   string `schema:"channel_id" json:"channel_id,omitempty" gorethink:"channel_id"`
+	ChannelName string `schema:"channel_name" json:"channel_name,omitempty" gorethink:"channel_name"`
+	UserID      string `schema:"user_id" json:"user_id,omitempty" gorethink:"user_id"`
+	UserName    string `schema:"user_name" json:"user_name,omitempty" gorethink:"user_name"`
+	Text        string `schema:"text" json:"text,omitempty" gorethink:"text"`
+	Command     string `schema:"command" json:"command,omitempty" gorethink:"command"`
+	Timestamp   int    `schema:"-" json:"timestamp,omitempty" gorethink:"timestamp"`
 }
 
 type QuoteStorage struct {

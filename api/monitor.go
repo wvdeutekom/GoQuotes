@@ -52,22 +52,45 @@ func (a *AppContext) Monitor() {
 				fmt.Printf("Error: %d - %s\n", error.Code, error.Msg)
 			case *slack.StarAddedEvent:
 				event := msg.Data.(*slack.StarAddedEvent)
-				fmt.Printf("\nMESSAGE IS STARRED!: %s\n\n", event.Item.Text)
-				quote := new(storage.Quote)
-				quote.Text = event.Item.Text
 
 				tsFloat, err := strconv.ParseFloat(event.Item.Message.Timestamp, 64)
 				if err != nil {
-					fmt.Printf("ERROR JIM, ERROR!: %s\n\n", err)
+					fmt.Printf("ERROR CONVERTING TIMESTAMP JIM, ERROR!: %s\n\n", err)
 				}
 
+				quote := new(storage.Quote)
+				quote.Text = event.Item.Text
 				quote.Timestamp = int(tsFloat)
-				quote.ChannelID = event.Item.Message.ChannelId
-				quote.UserName = event.Item.Message.Username
+				quote.ChannelID = event.Item.ChannelId
 				quote.UserID = event.Item.Message.UserId
 
-				fmt.Printf("message timestamp: %#v vs event timestamp: %#v\n", quote.Timestamp, event.EventTimestamp)
-				a.Storage.SaveQuote(quote)
+				channelInfo, err := a.Slack.GetChannelInfo(event.Item.ChannelId)
+				if err != nil {
+					fmt.Printf("GetChannelInfo error: %s", err)
+				}
+
+				quote.ChannelName = channelInfo.Name
+
+				userInfo, err := a.Slack.GetUserInfo(event.Item.Message.UserId)
+				if err != nil {
+					fmt.Printf("GetUserInfo error: %s", err)
+				}
+
+				if userInfo.RealName != "" {
+					quote.UserName = userInfo.RealName
+				} else {
+					quote.UserName = userInfo.Name
+				}
+
+				searchQuote, err := a.Storage.SearchQuotes([]string{quote.Text})
+				if err != nil {
+					fmt.Printf("Error searching quote: %s \n", err)
+				}
+				if len(searchQuote) != 0 {
+					fmt.Printf("Quote already exists, not saving.\n\n")
+				} else {
+					a.Storage.SaveQuote(quote)
+				}
 
 			default:
 				fmt.Printf("Unexpected: %v\n", msg.Data)
