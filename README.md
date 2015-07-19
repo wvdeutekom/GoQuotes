@@ -12,3 +12,5 @@ starred messages are stored the same way as the /quote command would.
 
 ## Wishlist
 * Daily activity api
+* Api Authentication
+* Comments on quotes 
