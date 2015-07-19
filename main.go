@@ -7,16 +7,16 @@ import (
 	r "github.com/dancannon/gorethink"
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
-	"github.com/wvdeutekom/webhookproject/api"
-	"github.com/wvdeutekom/webhookproject/slack"
+	"github.com/nlopes/slack"
+	a "github.com/wvdeutekom/webhookproject/api"
 	"github.com/wvdeutekom/webhookproject/storage"
 )
 
 func main() {
 
-	config := api.NewConfig("config.gcfg")
+	config := a.NewConfig("config.gcfg")
 	echo := echo.New()
-	slack := slack.New(config.Slack.Token)
+	s := slack.New(config.Slack.Token)
 
 	var session *r.Session
 
@@ -45,8 +45,8 @@ func main() {
 	echo.Use(mw.Logger())
 	echo.Use(mw.Recover())
 
-	appcontext := &api.AppContext{
-		Slack:  slack,
+	appcontext := &a.AppContext{
+		Slack:  s,
 		Config: config,
 		Storage: &storage.QuoteStorage{
 			Name:    "quotes",
@@ -55,8 +55,10 @@ func main() {
 		},
 	}
 
+	go appcontext.Monitor()
+
 	//Routes
-	api.Route(echo, appcontext)
+	a.Route(echo, appcontext)
 
 	addr := fmt.Sprintf(":%d", config.App.Port)
 	log.Printf("Starting server on: %s", addr)

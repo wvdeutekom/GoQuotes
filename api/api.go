@@ -6,7 +6,7 @@ import (
 
 	"code.google.com/p/gcfg"
 	"github.com/labstack/echo"
-	"github.com/wvdeutekom/webhookproject/slack"
+	"github.com/nlopes/slack"
 	"github.com/wvdeutekom/webhookproject/storage"
 )
 
@@ -28,7 +28,7 @@ type Config struct {
 		Port int
 	}
 	Database storage.Database
-	Slack    slack.Slack
+	Slack    Slack
 }
 
 type AppContext struct {
@@ -37,7 +37,10 @@ type AppContext struct {
 	Storage *storage.QuoteStorage
 }
 
-// Struct used to marshall json
+type Slack struct {
+	Token string
+}
+
 type Data struct {
 	Object interface{}
 	Meta   bool

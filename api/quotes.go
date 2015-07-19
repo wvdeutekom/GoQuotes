@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/schema"
 	"github.com/labstack/echo"
+	"github.com/nlopes/slack"
 	st "github.com/wvdeutekom/webhookproject/storage"
 )
 
@@ -138,12 +139,15 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 	resultQuote, err := a.Storage.SearchQuotes(strings.Split(quote.Text, ","))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
+		return c.JSON(http.StatusNotFound, Error{"Quotes could not be found.", err})
 	}
 
 	quoteText := "\"" + resultQuote[0].Text + "\"" + " ~" + resultQuote[0].UserName
-	if a.Slack.ChatPostMessage(quote.ChannelID, quoteText, nil); err != nil {
-		return c.JSON(http.StatusBadRequest, Error{"Could not post to Slack channel", err})
+
+	params := slack.PostMessageParameters{}
+	_, _, err = a.Slack.PostMessage(quote.ChannelID, quoteText, params)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Error{"Could not post to Slack channel", err})
 	}
 
 	return echo.NewHTTPError(http.StatusOK, "There's your quote sir!")
@@ -152,9 +156,13 @@ func (a *AppContext) SearchQuote(c *echo.Context) error {
 // Dev stuff
 func (a *AppContext) SendQuote(c *echo.Context) error {
 	fmt.Printf("Sending quote with slack: %s\n", a.Slack)
-	if err := a.Slack.ChatPostMessage("C02QG1PDQ", "Karlo, of jij even je mondtd wilt houden.", nil); err != nil {
-		fmt.Printf("Error sending quote: %s\n", err)
-	}
 
+	params := slack.PostMessageParameters{}
+	channelID, timestamp, err := a.Slack.PostMessage("C02R0LWRQ", "You are Zaphod Beeblebrox?", params)
+	if err != nil {
+		fmt.Printf("%s\n", err)
+		return c.JSON(http.StatusInternalServerError, "Oh crap, something went wrong sending the quote\n")
+	}
+	fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
 	return c.JSON(http.StatusOK, "SendQuote fired, sir.")
 }

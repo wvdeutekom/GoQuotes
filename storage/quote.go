@@ -40,7 +40,7 @@ type Quote struct {
 	UserName    string `schema:"user_name" json:"user_name" gorethink:"user_name"`
 	Text        string `schema:"text" json:"text" gorethink:"text"`
 	Command     string `schema:"command" json:"command" gorethink:"command"`
-	Timestamp   int64  `schema:"-" json:"timestamp" gorethink:"timestamp"`
+	Timestamp   int    `schema:"-" json:"timestamp" gorethink:"timestamp"`
 }
 
 type QuoteStorage struct {
@@ -51,7 +51,7 @@ type QuoteStorage struct {
 
 func (s *QuoteStorage) SaveQuote(quote *Quote) {
 
-	quote.Timestamp = time.Now().Unix()
+	quote.Timestamp = int(time.Now().Unix())
 
 	fmt.Printf("Looks like you're saving a quote: %#v\n", quote)
 	_, err := r.DB(s.Name).Table("quote").Insert(quote).RunWrite(s.Session)
