@@ -9,3 +9,6 @@ starred messages are stored the same way as the /quote command would.
 * go get code.google.com/p/gcfg
 * go get gopkg.in/dancannon/gorethink.v1
 * go get github.com/gorilla/schema
+
+## Wishlist
+* Daily activity api
