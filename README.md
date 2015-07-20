@@ -11,6 +11,9 @@ starred messages are stored the same way as the /quote command would.
 * go get github.com/gorilla/schema
 
 ## Wishlist
+* Nginx redirect api subdomain directly to go container
 * Daily activity api
 * Api Authentication
 * Comments on quotes 
+* Slack notification when message is starred
+* External logging for the Go docker container (ELK stack?)

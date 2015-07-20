@@ -6,3 +6,4 @@ echo "You may need to sign into Docker hub. If you have signed in already you ca
 
 bash ${basepath}/rethinkdb/startdocker.sh
 bash ${basepath}/go/startdocker.sh
+bash ${basepath}/nginx/startdocker.sh
