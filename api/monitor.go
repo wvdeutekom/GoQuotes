@@ -2,7 +2,9 @@ package api
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/nlopes/slack"
@@ -98,4 +100,88 @@ func (a *AppContext) Monitor() {
 			}
 		}
 	}
+}
+
+func RegSplit(text string, delimeter string) []string {
+	reg := regexp.MustCompile(delimeter)
+
+	//Retrieve the part of text that matches <(.*?)>
+	test := reg.FindAllString(text, -1)
+	indexes := reg.FindAllStringIndex(text, -1)
+	fmt.Println(test)
+	laststart := 0
+	result := make([]string, len(indexes)+1)
+	fmt.Println(result)
+	for i, element := range indexes {
+		result[i] = text[laststart:element[0]]
+		laststart = element[1]
+	}
+	result[len(indexes)] = text[laststart:len(text)]
+	return result
+}
+
+func ReplaceText(input string, search string, replacement string) string {
+
+	reg := regexp.MustCompile(search)
+	channelStrings := reg.FindAllString(input, -1)
+	fmt.Println(channelStrings)
+
+	for _, element := range channelStrings {
+		fmt.Println(element)
+		s := strings.Replace(input, element, replacement, -1)
+		fmt.Println("result stringreplace: ", s)
+		input = s
+	}
+
+	return input
+}
+
+func (a *AppContext) ReplaceTags(input string, search string) string {
+
+	reg := regexp.MustCompile(search)
+	channelStrings := reg.FindAllString(input, -1)
+	fmt.Println(channelStrings)
+
+	for _, element := range channelStrings {
+
+		//If first three chars start with "<#C", then its a channel tag
+		var newElement string
+		switch element[1:3] {
+		case "#C":
+			{
+				//Replace entire element with new channel name (fetched from api)
+				slackChannel, err := a.Slack.GetChannelInfo(element[2:12])
+				if err != nil {
+					fmt.Printf("Error getting channel info: %s\n", err)
+				}
+
+				fmt.Printf("Got slack channel: %s\n", slackChannel)
+				newElement = slackChannel.Name
+			}
+		case "@U":
+			{
+				//Replace element with user name (fetched from api)
+				slackUser, err := a.Slack.GetUserInfo(element[2:12])
+				if err != nil {
+					fmt.Printf("Error getting channel info: %s\n", err)
+				}
+
+				fmt.Printf("Got slack user: %s\n", slackUser)
+				if slackUser.RealName != "" {
+					newElement = slackUser.RealName
+				} else {
+					newElement = slackUser.Name
+				}
+			}
+		default:
+			fmt.Println("Not a recognized tag")
+		}
+
+		fmt.Println(newElement)
+		s := strings.Replace(input, element, newElement, -1)
+		fmt.Println("result stringreplace: ", s)
+		input = s
+	}
+
+	return input
 }
