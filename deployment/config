@@ -13,7 +13,7 @@ nginx_containername="nginx_reverseproxy"
 nginx_imagename="latest"
 ngxinx_hub_reopository="nginx-proxy"
 nginx_hub_username="jwilder"
-declare -a nginx_port=8000:8000
+declare -a nginx_port=80:80
 
 # Go
 go_containername="go"

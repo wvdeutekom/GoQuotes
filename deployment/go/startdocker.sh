@@ -4,6 +4,7 @@
 echo "Starting up ${go_containername}"
 
 docker run -dit \
+-e VIRTUAL_HOST=api.vdeute.com \
 -p ${go_port[0]} \
 --link ${rethink_containername}:rethinkdb \
 --name ${go_containername} \

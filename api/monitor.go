@@ -59,12 +59,13 @@ func (a *AppContext) Monitor() {
 				}
 
 				quote := new(storage.Quote)
-				quote.Text = event.Item.Text
+				fmt.Println("\n")
+				quote.Text = event.Item.Message.Text
 				quote.Timestamp = int(tsFloat)
-				quote.ChannelID = event.Item.ChannelId
+				quote.ChannelID = event.Item.Message.ChannelId
 				quote.UserID = event.Item.Message.UserId
 
-				channelInfo, err := a.Slack.GetChannelInfo(event.Item.ChannelId)
+				channelInfo, err := a.Slack.GetChannelInfo(event.Item.Message.ChannelId)
 				if err != nil {
 					fmt.Printf("GetChannelInfo error: %s", err)
 				}

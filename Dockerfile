@@ -8,6 +8,7 @@ RUN go get code.google.com/p/gcfg
 RUN go get gopkg.in/dancannon/gorethink.v1
 RUN go get github.com/gorilla/schema
 RUN go get github.com/labstack/echo
+RUN go get github.com/nlopes/slack
 
 RUN go get github.com/wvdeutekom/webhookproject
 
