@@ -62,28 +62,10 @@ func (a *AppContext) Monitor() {
 
 				quote := new(storage.Quote)
 				fmt.Println("\n")
-				quote.Text = event.Item.Message.Text
+				quote.Text = a.ReplaceTags(event.Item.Message.Text, "<(.*?)>")
 				quote.Timestamp = int(tsFloat)
 				quote.ChannelID = event.Item.Message.ChannelId
 				quote.UserID = event.Item.Message.UserId
-
-				channelInfo, err := a.Slack.GetChannelInfo(event.Item.Message.ChannelId)
-				if err != nil {
-					fmt.Printf("GetChannelInfo error: %s", err)
-				}
-
-				quote.ChannelName = channelInfo.Name
-
-				userInfo, err := a.Slack.GetUserInfo(event.Item.Message.UserId)
-				if err != nil {
-					fmt.Printf("GetUserInfo error: %s", err)
-				}
-
-				if userInfo.RealName != "" {
-					quote.UserName = userInfo.RealName
-				} else {
-					quote.UserName = userInfo.Name
-				}
 
 				searchQuote, err := a.Storage.SearchQuotes([]string{quote.Text})
 				if err != nil {
@@ -156,7 +138,7 @@ func (a *AppContext) ReplaceTags(input string, search string) string {
 				}
 
 				fmt.Printf("Got slack channel: %s\n", slackChannel)
-				newElement = slackChannel.Name
+				newElement = "#" + slackChannel.Name
 			}
 		case "@U":
 			{
@@ -167,10 +149,11 @@ func (a *AppContext) ReplaceTags(input string, search string) string {
 				}
 
 				fmt.Printf("Got slack user: %s\n", slackUser)
+				newElement = "@"
 				if slackUser.RealName != "" {
-					newElement = slackUser.RealName
+					newElement = newElement + slackUser.RealName
 				} else {
-					newElement = slackUser.Name
+					newElement = newElement + slackUser.Name
 				}
 			}
 		default:
