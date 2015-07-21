@@ -27,4 +27,4 @@ runupdatescript () {
   ssh root@${deploy_server} "cd ${deploy_dir}/deployment; bash update_server.sh"
 }
 
-rsyncfiles && runupdatescript
+buildimages && pushimages && rsyncfiles && runupdatescript
