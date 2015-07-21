@@ -51,10 +51,12 @@ type QuoteStorage struct {
 
 func (s *QuoteStorage) SaveQuote(quote *Quote) {
 
-	quote.Timestamp = int(time.Now().Unix())
+	fmt.Printf("\n\nLooks like you're saving a quote: %#v\n\n", quote)
 
-	fmt.Printf("Looks like you're saving a quote: %#v\n", quote)
-	_, err := r.DB(s.Name).Table("quote").Insert(quote).RunWrite(s.Session)
+	if quote.Timestamp == 0 {
+		quote.Timestamp = int(time.Now().Unix())
+	}
+	_, err := r.DB(s.Name).Table("quotes").Insert(quote).RunWrite(s.Session)
 	if err != nil {
 		fmt.Print(err)
 		return
@@ -62,7 +64,7 @@ func (s *QuoteStorage) SaveQuote(quote *Quote) {
 }
 
 func (s *QuoteStorage) FindAllQuotes() ([]Quote, error) {
-	rows, err := r.DB(s.Name).Table("quote").Run(s.Session)
+	rows, err := r.DB(s.Name).Table("quotes").Run(s.Session)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +81,7 @@ func (s *QuoteStorage) FindAllQuotes() ([]Quote, error) {
 
 func (s *QuoteStorage) FindOneQuote(id string) (*Quote, error) {
 
-	rows, err := r.DB(s.Name).Table("quote").Filter(
+	rows, err := r.DB(s.Name).Table("quotes").Filter(
 		r.Row.Field("id").Eq(id)).Run(s.Session)
 
 	if err != nil {
@@ -98,7 +100,7 @@ func (s *QuoteStorage) FindOneQuote(id string) (*Quote, error) {
 
 func (s *QuoteStorage) GetLatestQuote() Quote {
 
-	rows, err := r.Table("quote").OrderBy(r.Desc("timestamp")).Run(s.Session)
+	rows, err := r.Table("quotes").OrderBy(r.Desc("timestamp")).Run(s.Session)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -115,13 +117,21 @@ func (s *QuoteStorage) GetLatestQuote() Quote {
 	return quote
 }
 
-func (s *QuoteStorage) DeleteQuote(id string) error {
+func (s *QuoteStorage) DeleteQuote(id string) (*Quote, error) {
 
-	_, err := r.DB(s.Name).Table("quote").Get(id).Delete().Run(s.Session)
+	rows, err := r.DB(s.Name).Table("quotes").Get(id).Delete().Run(s.Session)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	defer rows.Close()
+
+	var quote Quote
+	err = rows.One(&quote)
+	if err == r.ErrEmptyResult {
+		return nil, err
+	}
+
+	return &quote, nil
 
 }
 
@@ -133,7 +143,7 @@ func (s *QuoteStorage) SearchQuotes(searchStrings []string) ([]Quote, error) {
 	searchTerms := strings.Join(searchStrings, "|")
 	fmt.Printf("Filtered searchterms: %s\n", searchTerms)
 
-	rows, err := r.Table("quote").Filter(func(quote r.Term) r.Term {
+	rows, err := r.Table("quotes").Filter(func(quote r.Term) r.Term {
 		return quote.Field("text").Match(searchTerms)
 	}).Run(s.Session)
 	if err != nil {

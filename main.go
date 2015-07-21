@@ -36,7 +36,7 @@ func main() {
 		log.Println(err)
 	}
 
-	_, err = r.DB(config.Database.Name).TableCreate("quote").RunWrite(session)
+	_, err = r.DB(config.Database.Name).TableCreate("quotes").RunWrite(session)
 	if err != nil {
 		fmt.Print(err)
 	}
