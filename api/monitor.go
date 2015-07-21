@@ -67,6 +67,24 @@ func (a *AppContext) Monitor() {
 				quote.ChannelID = event.Item.Message.ChannelId
 				quote.UserID = event.Item.Message.UserId
 
+				fmt.Printf("channelID: %s\n", event.Item.ChannelId)
+				channelInfo, err := a.Slack.GetChannelInfo(event.Item.ChannelId)
+				if err != nil {
+					fmt.Printf("GetChannelInfo error: %s", err)
+				}
+
+				quote.ChannelName = channelInfo.Name
+				userInfo, err := a.Slack.GetUserInfo(event.Item.Message.UserId)
+				if err != nil {
+					fmt.Printf("GetUserInfo error: %s", err)
+				}
+
+				if userInfo.RealName != "" {
+					quote.UserName = userInfo.RealName
+				} else {
+					quote.UserName = userInfo.Name
+				}
+
 				searchQuote, err := a.Storage.SearchQuotes([]string{quote.Text})
 				if err != nil {
 					fmt.Printf("Error searching quote: %s \n", err)
