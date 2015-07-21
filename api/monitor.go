@@ -67,8 +67,8 @@ func (a *AppContext) Monitor() {
 				quote.ChannelID = event.Item.Message.ChannelId
 				quote.UserID = event.Item.Message.UserId
 
-				fmt.Printf("channelID: %s\n", event.Item.ChannelId)
-				channelInfo, err := a.Slack.GetChannelInfo(event.Item.ChannelId)
+				fmt.Printf("channelID: %#v\n\n", event.Item.Channel)
+				channelInfo, err := a.Slack.GetChannelInfo(event.Item.Channel)
 				if err != nil {
 					fmt.Printf("GetChannelInfo error: %s", err)
 				}
@@ -80,7 +80,7 @@ func (a *AppContext) Monitor() {
 				}
 
 				if userInfo.RealName != "" {
-					quote.UserName = userInfo.RealName
+					quote.UserName = strings.Split(userInfo.RealName, " ")[0]
 				} else {
 					quote.UserName = userInfo.Name
 				}
