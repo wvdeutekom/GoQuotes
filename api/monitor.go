@@ -127,6 +127,7 @@ func (a *AppContext) ReplaceTags(input string, search string) string {
 	for _, element := range channelStrings {
 
 		//If first three chars start with "<#C", then its a channel tag
+		fmt.Printf("Switch on: %s\n", element[1:3])
 		var newElement string
 		switch element[1:3] {
 		case "#C":
@@ -157,7 +158,14 @@ func (a *AppContext) ReplaceTags(input string, search string) string {
 				}
 			}
 		default:
-			fmt.Println("Not a recognized tag")
+			if element[1:9] == "!channel" {
+				newElement = "@channel"
+			} else if element[1:5] == "http" || element[1:5] == "https" {
+				newElement = strings.Split(element[1:len([]rune(element))-1], "|")[0]
+			} else {
+				fmt.Println("Not a recognized tag, not replacing anything")
+				newElement = element
+			}
 		}
 
 		fmt.Println(newElement)

@@ -109,11 +109,12 @@ func (a *AppContext) EditQuote(c *echo.Context) error {
 //DELETE /quotes/:id
 func (a *AppContext) DeleteQuote(c *echo.Context) error {
 
-	if err := a.Storage.DeleteQuote(c.Param("id")); err != nil {
+	quote, err := a.Storage.DeleteQuote(c.Param("id"))
+	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
 
-	return c.JSON(http.StatusOK, "Quote deleted")
+	return c.JSON(http.StatusOK, Response{Data: quote})
 }
 
 func (a *AppContext) SearchQuote(c *echo.Context) error {
