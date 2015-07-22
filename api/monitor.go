@@ -64,7 +64,7 @@ func (a *AppContext) Monitor() {
 				fmt.Println("\n")
 				quote.Text = a.ReplaceTags(event.Item.Message.Text, "<(.*?)>")
 				quote.Timestamp = int(tsFloat)
-				quote.ChannelID = event.Item.Message.ChannelId
+				quote.ChannelID = event.Item.Channel
 				quote.UserID = event.Item.Message.UserId
 
 				fmt.Printf("channelID: %#v\n\n", event.Item.Channel)
@@ -93,6 +93,15 @@ func (a *AppContext) Monitor() {
 					fmt.Printf("Quote already exists, not saving.\n\n")
 				} else {
 					a.Storage.SaveQuote(quote)
+
+					//Send a message to the channel: quote has been saved
+
+					params := slack.PostMessageParameters{}
+					returnMessage := "And it's a quote! \n\"" + quote.Text + "\" ~ " + quote.UserName
+					_, _, err := a.Slack.PostMessage(quote.ChannelID, returnMessage, params)
+					if err != nil {
+						fmt.Printf("Oh crap, something went wrong sending the quote\n", err)
+					}
 				}
 
 			default:
