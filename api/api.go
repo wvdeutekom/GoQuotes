@@ -24,11 +24,14 @@ token = nicetry
 `
 
 type Config struct {
-	App struct {
-		Port int
-	}
+	App      App
 	Database storage.Database
 	Slack    Slack
+}
+
+type App struct {
+	Port  int
+	Token string
 }
 
 type AppContext struct {

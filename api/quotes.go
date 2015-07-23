@@ -69,6 +69,8 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 
 	var query = c.Request().URL.Query().Get("q")
 
+	//Check for token header
+
 	//Add header for angular CORS support
 	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -109,6 +111,7 @@ func (a *AppContext) EditQuote(c *echo.Context) error {
 //DELETE /quotes/:id
 func (a *AppContext) DeleteQuote(c *echo.Context) error {
 
+	fmt.Printf("Delete api quote\n")
 	quote, err := a.Storage.DeleteQuote(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)

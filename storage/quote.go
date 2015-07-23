@@ -6,21 +6,8 @@ import (
 	"time"
 
 	r "github.com/dancannon/gorethink"
+	m "github.com/mitchellh/mapstructure"
 )
-
-// Quote struct for outgoing webhook instead of slash command
-// type Quote struct {
-// 	Token       string `schema:"token"`
-// 	TeamID      string `schema:"team_id"`
-// 	TeamDomain  string `schema:"team_domain"`
-// 	ChannelID   string `schema:"channel_id"`
-// 	ChannelName string `schema:"channel_name"`
-// 	Timestamp   int    `schema:"timestamp"`
-// 	UserID      string `schema:"user_id"`
-// 	UserName    string `schema:"user_name"`
-// 	Text        string `schema:"text"`
-// 	TriggerWord string `schema:"trigger_word"`
-// }
 
 type Storage struct {
 	Name string
@@ -38,7 +25,7 @@ type Quote struct {
 	ChannelName string `schema:"channel_name" json:"channel_name,omitempty" gorethink:"channel_name"`
 	UserID      string `schema:"user_id" json:"user_id,omitempty" gorethink:"user_id"`
 	UserName    string `schema:"user_name" json:"user_name,omitempty" gorethink:"user_name"`
-	Text        string `schema:"text" json:"text,omitempty" gorethink:"text"`
+	Text        string `schema:"text" json:"text" gorethink:"text"`
 	Command     string `schema:"command" json:"command,omitempty" gorethink:"command"`
 	Timestamp   int    `schema:"-" json:"timestamp,omitempty" gorethink:"timestamp"`
 }
@@ -119,20 +106,29 @@ func (s *QuoteStorage) GetLatestQuote() Quote {
 
 func (s *QuoteStorage) DeleteQuote(id string) (*Quote, error) {
 
-	rows, err := r.DB(s.Name).Table("quotes").Get(id).Delete().Run(s.Session)
+	rows, err := r.DB(s.Name).Table("quotes").Get(id).Delete(r.DeleteOpts{ReturnChanges: true}).Run(s.Session)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var quote Quote
-	err = rows.One(&quote)
-	if err == r.ErrEmptyResult {
-		return nil, err
+	var value r.WriteResponse
+	rows.One(&value)
+
+	var oldValueMap, ok = value.Changes[0].OldValue.(map[string]interface{})
+	if !ok {
+		fmt.Println("Type assertion failed :(")
+	}
+	fmt.Println("OldvalueMap: ", oldValueMap)
+
+	var oldValueQuote Quote
+	err = m.Decode(oldValueMap, &oldValueQuote)
+	if err != nil {
+		fmt.Println("err decoding: ", err)
 	}
 
-	return &quote, nil
-
+	fmt.Println("OldvalueQuote: ", oldValueQuote)
+	return &oldValueQuote, nil
 }
 
 func (s *QuoteStorage) SearchQuotes(searchStrings []string) ([]Quote, error) {
