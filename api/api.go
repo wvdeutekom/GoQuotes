@@ -79,6 +79,7 @@ func LoadConfig(configFile string) *Config {
 }
 
 func Route(e *echo.Echo, a *AppContext) {
+	//Quotes
 	e.Post("/quotes", a.NewQuote)
 	e.Get("/quotes", a.GetQuotes)
 	e.Get("/quotes/:id", a.FindOneQuote)
@@ -89,9 +90,11 @@ func Route(e *echo.Echo, a *AppContext) {
 	e.Post("/slack/insertQuote", a.NewQuote)
 	e.Get("/slack/searchQuote", a.SearchQuote)
 
-	//Legacy
-	//	e.Post("/latestquote", a.GetLatestQuote)
-	//	e.Post("/searchquote", a.SearchQuote)
-	//	e.Get("/searchquote", a.SearchQuote)
+	//Activity feed
+	//e.Post("/activity", a.NewActivity)
+	//e.Get("/activity", a.GetActivities)
+	//e.Delete("/activity/:id", e.DeleteActivity)
+
+	//Debug
 	e.Get("/debug", a.SendQuote)
 }

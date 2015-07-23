@@ -23,11 +23,25 @@ type Meta struct {
 }
 
 type Response struct {
-	Data interface{} `json:"data,omitempty"`
-	Meta Meta        `json:"meta,omitempty"`
+	Status string      `json:"status"`
+	Data   interface{} `json:"data,omitempty"`
+	Meta   Meta        `json:"meta,omitempty"`
+}
+
+func FormatResponse(status string, data interface{}) Response {
+
+	return Response{
+		Status: status,
+		Data:   data,
+		Meta: Meta{
+			Authors: []string{"Wijnand van Deutekom"},
+			Github:  "https://github.com/wvdeutekom/GoQuotes",
+		},
+	}
 }
 
 //POST /quotes
+//POST /slack/insertQuote
 func (a *AppContext) NewQuote(c *echo.Context) error {
 
 	r := c.Request()
@@ -86,7 +100,7 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
 
-	return c.JSON(http.StatusOK, Response{Data: quotes})
+	return c.JSON(http.StatusOK, FormatResponse("Fetched", quotes))
 }
 
 //GET /quotes/:id
@@ -100,12 +114,12 @@ func (a *AppContext) FindOneQuote(c *echo.Context) error {
 		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
 	}
 
-	return c.JSON(http.StatusOK, Response{Data: quote})
+	return c.JSON(http.StatusOK, FormatResponse("Fetched", quote))
 }
 
 func (a *AppContext) EditQuote(c *echo.Context) error {
 
-	return c.JSON(http.StatusOK, "in development")
+	return c.JSON(http.StatusOK, FormatResponse("In development", nil))
 }
 
 //DELETE /quotes/:id
@@ -117,9 +131,10 @@ func (a *AppContext) DeleteQuote(c *echo.Context) error {
 		return c.JSON(http.StatusNotFound, err)
 	}
 
-	return c.JSON(http.StatusOK, Response{Data: quote})
+	return c.JSON(http.StatusOK, FormatResponse("Deleted", quote))
 }
 
+//GET /slack/searchQuote
 func (a *AppContext) SearchQuote(c *echo.Context) error {
 
 	r := c.Request()

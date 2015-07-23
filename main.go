@@ -48,7 +48,7 @@ func main() {
 	appcontext := &a.AppContext{
 		Slack:  s,
 		Config: config,
-		Storage: &storage.QuoteStorage{
+		Storage: &storage.Storage{
 			Name:    "quotes",
 			URL:     "192.168.10.10",
 			Session: session,

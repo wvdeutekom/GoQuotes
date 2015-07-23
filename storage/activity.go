@@ -6,31 +6,11 @@ import (
 	"time"
 
 	r "github.com/dancannon/gorethink"
-	m "github.com/mitchellh/mapstructure"
 )
 
-// Quote struct for slash command
-type Quote struct {
-	ID          string `schema:"id" json:"id" gorethink:"id,omitempty" mapstructure:"id"`
-	Token       string `schema:"token" json:"-" gorethink:"token" mapstructure:"token"`
-	TeamID      string `schema:"team_id" json:"team_id,omitempty" gorethink:"team_id" mapstructure:"team_id"`
-	TeamDomain  string `schema:"team_domain" json:"team_domain,omitempty" gorethink:"team_domain" mapstructure:"team_domain"`
-	ChannelID   string `schema:"channel_id" json:"channel_id,omitempty" gorethink:"channel_id" mapstructure:"channel_id"`
-	ChannelName string `schema:"channel_name" json:"channel_name,omitempty" gorethink:"channel_name" mapstructure:"channel_name"`
-	UserID      string `schema:"user_id" json:"user_id,omitempty" gorethink:"user_id" mapstructure"user_id"`
-	UserName    string `schema:"user_name" json:"user_name,omitempty" gorethink:"user_name" mapstructure:"user_name"`
-	Text        string `schema:"text" json:"text" gorethink:"text" mapstructure:"text"`
-	Command     string `schema:"command" json:"command,omitempty" gorethink:"command" mapstructure:"command"`
-	Timestamp   int    `schema:"-" json:"timestamp,omitempty" gorethink:"timestamp" mapstructure:"timestamp"`
-}
+type Activity Quote
 
-type Storage struct {
-	Name    string
-	URL     string
-	Session *r.Session
-}
-
-func (s *Storage) SaveQuote(quote *Quote) {
+func (s *Storage) SaveActivity(activity *Activity) {
 
 	fmt.Printf("\n\nLooks like you're saving a quote: %#v\n\n", quote)
 
@@ -44,7 +24,7 @@ func (s *Storage) SaveQuote(quote *Quote) {
 	}
 }
 
-func (s *Storage) FindAllQuotes() ([]Quote, error) {
+func (s *Storage) FindAllActivities() ([]Activity, error) {
 	rows, err := r.DB(s.Name).Table("quotes").Run(s.Session)
 	if err != nil {
 		return nil, err
@@ -60,7 +40,7 @@ func (s *Storage) FindAllQuotes() ([]Quote, error) {
 	return list, nil
 }
 
-func (s *Storage) FindOneQuote(id string) (*Quote, error) {
+func (s *Storage) FindOneActivity(id string) (*Activity, error) {
 
 	rows, err := r.DB(s.Name).Table("quotes").Filter(
 		r.Row.Field("id").Eq(id)).Run(s.Session)
@@ -79,26 +59,7 @@ func (s *Storage) FindOneQuote(id string) (*Quote, error) {
 	return &quote, nil
 }
 
-func (s *Storage) GetLatestQuote() Quote {
-
-	rows, err := r.Table("quotes").OrderBy(r.Desc("timestamp")).Run(s.Session)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer rows.Close()
-
-	var quote Quote
-	err2 := rows.One(&quote)
-	if err2 != nil {
-		fmt.Println(err2)
-	}
-
-	fmt.Printf("Fetch one record %#v\n", quote)
-
-	return quote
-}
-
-func (s *Storage) DeleteQuote(id string) (*Quote, error) {
+func (s *Storage) DeleteActivity(id string) (*Activity, error) {
 
 	rows, err := r.DB(s.Name).Table("quotes").Get(id).Delete(r.DeleteOpts{ReturnChanges: true}).Run(s.Session)
 	if err != nil {
@@ -125,7 +86,7 @@ func (s *Storage) DeleteQuote(id string) (*Quote, error) {
 	return &oldValueQuote, nil
 }
 
-func (s *Storage) SearchQuotes(searchStrings []string) ([]Quote, error) {
+func (s *Storage) SearchActivity(searchStrings []string) ([]Activity, error) {
 
 	fmt.Printf("Searchterms: %s\n", searchStrings)
 
