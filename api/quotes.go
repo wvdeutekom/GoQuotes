@@ -28,18 +28,6 @@ type Response struct {
 	Meta   Meta        `json:"meta,omitempty"`
 }
 
-func FormatResponse(status string, data interface{}) Response {
-
-	return Response{
-		Status: status,
-		Data:   data,
-		Meta: Meta{
-			Authors: []string{"Wijnand van Deutekom"},
-			Github:  "https://github.com/wvdeutekom/GoQuotes",
-		},
-	}
-}
-
 //POST /quotes
 //POST /slack/insertQuote
 func (a *AppContext) NewQuote(c *echo.Context) error {

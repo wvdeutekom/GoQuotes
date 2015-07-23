@@ -37,7 +37,7 @@ type App struct {
 type AppContext struct {
 	Slack   *slack.Slack
 	Config  *Config
-	Storage *storage.QuoteStorage
+	Storage *storage.Storage
 }
 
 type Slack struct {
@@ -78,6 +78,18 @@ func LoadConfig(configFile string) *Config {
 	return &cfg
 }
 
+func FormatResponse(status string, data interface{}) Response {
+
+	return Response{
+		Status: status,
+		Data:   data,
+		Meta: Meta{
+			Authors: []string{"Wijnand van Deutekom"},
+			Github:  "https://github.com/wvdeutekom/GoQuotes",
+		},
+	}
+}
+
 func Route(e *echo.Echo, a *AppContext) {
 	//Quotes
 	e.Post("/quotes", a.NewQuote)
@@ -91,9 +103,9 @@ func Route(e *echo.Echo, a *AppContext) {
 	e.Get("/slack/searchQuote", a.SearchQuote)
 
 	//Activity feed
-	//e.Post("/activity", a.NewActivity)
-	//e.Get("/activity", a.GetActivities)
-	//e.Delete("/activity/:id", e.DeleteActivity)
+	e.Post("/activity", a.NewActivity)
+	e.Get("/activity", a.GetActivities)
+	e.Delete("/activity/:id", a.DeleteActivity)
 
 	//Debug
 	e.Get("/debug", a.SendQuote)

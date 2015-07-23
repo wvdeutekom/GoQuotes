@@ -6,18 +6,19 @@ import (
 	"time"
 
 	r "github.com/dancannon/gorethink"
+	m "github.com/mitchellh/mapstructure"
 )
 
 type Activity Quote
 
 func (s *Storage) SaveActivity(activity *Activity) {
 
-	fmt.Printf("\n\nLooks like you're saving a quote: %#v\n\n", quote)
+	fmt.Printf("\n\nLooks like you're saving a activity: %#v\n\n", activity)
 
-	if quote.Timestamp == 0 {
-		quote.Timestamp = int(time.Now().Unix())
+	if activity.Timestamp == 0 {
+		activity.Timestamp = int(time.Now().Unix())
 	}
-	_, err := r.DB(s.Name).Table("quotes").Insert(quote).RunWrite(s.Session)
+	_, err := r.DB(s.Name).Table("activities").Insert(activity).RunWrite(s.Session)
 	if err != nil {
 		fmt.Print(err)
 		return
@@ -25,13 +26,13 @@ func (s *Storage) SaveActivity(activity *Activity) {
 }
 
 func (s *Storage) FindAllActivities() ([]Activity, error) {
-	rows, err := r.DB(s.Name).Table("quotes").Run(s.Session)
+	rows, err := r.DB(s.Name).Table("activities").Run(s.Session)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var list []Quote
+	var list []Activity
 	err = rows.All(&list)
 	if err == r.ErrEmptyResult {
 		return nil, err
@@ -42,7 +43,7 @@ func (s *Storage) FindAllActivities() ([]Activity, error) {
 
 func (s *Storage) FindOneActivity(id string) (*Activity, error) {
 
-	rows, err := r.DB(s.Name).Table("quotes").Filter(
+	rows, err := r.DB(s.Name).Table("activities").Filter(
 		r.Row.Field("id").Eq(id)).Run(s.Session)
 
 	if err != nil {
@@ -50,18 +51,18 @@ func (s *Storage) FindOneActivity(id string) (*Activity, error) {
 	}
 	defer rows.Close()
 
-	var quote Quote
-	err = rows.One(&quote)
+	var activity Activity
+	err = rows.One(&activity)
 	if err == r.ErrEmptyResult {
 		return nil, err
 	}
 
-	return &quote, nil
+	return &activity, nil
 }
 
 func (s *Storage) DeleteActivity(id string) (*Activity, error) {
 
-	rows, err := r.DB(s.Name).Table("quotes").Get(id).Delete(r.DeleteOpts{ReturnChanges: true}).Run(s.Session)
+	rows, err := r.DB(s.Name).Table("activities").Get(id).Delete(r.DeleteOpts{ReturnChanges: true}).Run(s.Session)
 	if err != nil {
 		return nil, err
 	}
@@ -76,14 +77,14 @@ func (s *Storage) DeleteActivity(id string) (*Activity, error) {
 	}
 	fmt.Println("OldvalueMap: ", oldValueMap)
 
-	var oldValueQuote Quote
-	err = m.Decode(oldValueMap, &oldValueQuote)
+	var oldValueActivity Activity
+	err = m.Decode(oldValueMap, &oldValueActivity)
 	if err != nil {
 		fmt.Println("err decoding: ", err)
 	}
 
-	fmt.Println("OldvalueQuote: ", oldValueQuote)
-	return &oldValueQuote, nil
+	fmt.Println("Oldvalueactivity: ", oldValueActivity)
+	return &oldValueActivity, nil
 }
 
 func (s *Storage) SearchActivity(searchStrings []string) ([]Activity, error) {
@@ -94,15 +95,15 @@ func (s *Storage) SearchActivity(searchStrings []string) ([]Activity, error) {
 	searchTerms := strings.Join(searchStrings, "|")
 	fmt.Printf("Filtered searchterms: %s\n", searchTerms)
 
-	rows, err := r.Table("quotes").Filter(func(quote r.Term) r.Term {
-		return quote.Field("text").Match(searchTerms)
+	rows, err := r.Table("activities").Filter(func(activity r.Term) r.Term {
+		return activity.Field("text").Match(searchTerms)
 	}).Run(s.Session)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	list := []Quote{}
+	list := []Activity{}
 	err2 := rows.All(&list)
 	if err2 != nil {
 		fmt.Println(err2)
