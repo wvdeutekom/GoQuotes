@@ -43,56 +43,67 @@ func (a *AppContext) Monitor() {
 				//Ignore hello
 			case *slack.MessageEvent:
 				event := msg.Data.(*slack.MessageEvent)
-				fmt.Printf("Message: %v\n", event)
+				fmt.Printf("\nMessage: %v\n", event)
+				//fmt.Printf("Message.Msg: %v\n", event.Msg)
+				//fmt.Printf("Message.msg.userid: %s, message.msg.username: %s\n", event.Msg.UserId, event.Msg.Username)
+				//fmt.Printf("Message.userid: %s, message.username: %s\n", event.UserId, event.Username)
+				//fmt.Printf("Message type: %s, subtype: %s botid: %s\n", event.Type, event.Msg.Type, event.Msg.Type)
 
 				//Extract URLS from messages and save them
 				extractedURLS := xurls.Relaxed.FindAllString(event.Text, -1)
-				fmt.Printf("text: %s, extractedURLS: %s", event.Text, extractedURLS)
+				if len(extractedURLS) > 0 && event.UserId != "USLACKBOT" {
+					message := new(storage.Activity)
+					message.ChannelID = event.ChannelId
+					message.UserID = event.UserId
+					message.Text = event.Text
 
-				message := new(storage.Activity)
-				message.ChannelID = event.ChannelId
-				message.UserID = event.UserId
-				message.Text = event.Text
+					//Convert timestamp string to float
+					tsFloat, err := strconv.ParseFloat(event.Timestamp, 64)
+					if err != nil {
+						fmt.Printf("ERROR CONVERTING TIMESTAMP JIM, ERROR!: %s\n\n", err)
+					}
 
-				//Convert timestamp string to float
-				tsFloat, err := strconv.ParseFloat(event.Timestamp, 64)
-				if err != nil {
-					fmt.Printf("ERROR CONVERTING TIMESTAMP JIM, ERROR!: %s\n\n", err)
-				}
+					message.Timestamp = int(tsFloat)
 
-				message.Timestamp = int(tsFloat)
+					//Get channel name from slack API
+					channelInfo, err := a.Slack.GetChannelInfo(message.ChannelID)
+					if err != nil {
+						fmt.Printf("GetChannelInfo error: %s", err)
+					}
 
-				//Get channel name from slack API
-				channelInfo, err := a.Slack.GetChannelInfo(message.ChannelID)
-				if err != nil {
-					fmt.Printf("GetChannelInfo error: %s", err)
-				}
+					message.ChannelName = channelInfo.Name
 
-				message.ChannelName = channelInfo.Name
+					//Get user name from slack API
+					userInfo, err := a.Slack.GetUserInfo(message.UserID)
+					if err != nil {
+						fmt.Printf("GetUserInfo error: %s", err)
+					}
 
-				//Get user name from slack API
-				userInfo, err := a.Slack.GetUserInfo(message.UserID)
-				if err != nil {
-					fmt.Printf("GetUserInfo error: %s", err)
-				}
+					if userInfo.RealName != "" {
+						message.UserName = strings.Split(userInfo.RealName, " ")[0]
+					} else {
+						message.UserName = userInfo.Name
+					}
 
-				if userInfo.RealName != "" {
-					message.UserName = strings.Split(userInfo.RealName, " ")[0]
+					fmt.Printf("Complete message: %s", message)
+
+					for index, element := range extractedURLS {
+						fmt.Printf("url element: %s\n", element)
+
+						//Check if activity exists, if not -> then save
+						searchActivity, err := a.Storage.SearchActivity([]string{element})
+						if err != nil {
+							fmt.Printf("Error searching activity: %s \n", err)
+						}
+						if len(searchActivity) != 0 {
+							fmt.Printf("Activity already exists, not saving.\n\n")
+						} else {
+							message.URL = extractedURLS[index]
+							a.Storage.SaveActivity(message)
+						}
+					}
 				} else {
-					message.UserName = userInfo.Name
-				}
-
-				fmt.Printf("Complete message: %s", message)
-
-				//Check if activity exists, if not -> then save
-				searchActivity, err := a.Storage.SearchActivity([]string{message.Text})
-				if err != nil {
-					fmt.Printf("Error searching activity: %s \n", err)
-				}
-				if len(searchActivity) != 0 {
-					fmt.Printf("Quote already exists, not saving.\n\n")
-				} else {
-					a.Storage.SaveActivity(message)
+					fmt.Println("Not saving!")
 				}
 
 			case *slack.PresenceChangeEvent:

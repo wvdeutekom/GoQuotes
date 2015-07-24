@@ -9,7 +9,10 @@ import (
 	m "github.com/mitchellh/mapstructure"
 )
 
-type Activity Quote
+type Activity struct {
+	Message
+	URL string
+}
 
 func (s *Storage) SaveActivity(activity *Activity) {
 
