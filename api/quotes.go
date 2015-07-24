@@ -34,8 +34,7 @@ func (a *AppContext) NewQuote(c *echo.Context) error {
 
 	r := c.Request()
 
-	//Add header for angular CORS support
-	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+	SetDefaultHeaders(c)
 
 	//Parse post values
 	r.ParseForm()
@@ -73,8 +72,7 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 
 	//Check for token header
 
-	//Add header for angular CORS support
-	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+	SetDefaultHeaders(c)
 
 	//Get quote from database
 	if query != "" {
@@ -94,12 +92,11 @@ func (a *AppContext) GetQuotes(c *echo.Context) error {
 //GET /quotes/:id
 func (a *AppContext) FindOneQuote(c *echo.Context) error {
 
-	//Add header for angular CORS support
-	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+	SetDefaultHeaders(c)
 
 	quote, err := a.Storage.FindOneQuote(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, Error{"Quotes could not be found.", err})
+		return c.JSON(http.StatusNotFound, Error{"Quote could not be found.", err})
 	}
 
 	return c.JSON(http.StatusOK, FormatResponse("Fetched", quote))
@@ -107,11 +104,15 @@ func (a *AppContext) FindOneQuote(c *echo.Context) error {
 
 func (a *AppContext) EditQuote(c *echo.Context) error {
 
+	SetDefaultHeaders(c)
+
 	return c.JSON(http.StatusOK, FormatResponse("In development", nil))
 }
 
 //DELETE /quotes/:id
 func (a *AppContext) DeleteQuote(c *echo.Context) error {
+
+	SetDefaultHeaders(c)
 
 	fmt.Printf("Delete api quote\n")
 	quote, err := a.Storage.DeleteQuote(c.Param("id"))

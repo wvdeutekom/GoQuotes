@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mvdan/xurls"
 	"github.com/nlopes/slack"
 	"github.com/wvdeutekom/webhookproject/storage"
 )
@@ -43,6 +44,57 @@ func (a *AppContext) Monitor() {
 			case *slack.MessageEvent:
 				event := msg.Data.(*slack.MessageEvent)
 				fmt.Printf("Message: %v\n", event)
+
+				//Extract URLS from messages and save them
+				extractedURLS := xurls.Relaxed.FindAllString(event.Text, -1)
+				fmt.Printf("text: %s, extractedURLS: %s", event.Text, extractedURLS)
+
+				message := new(storage.Activity)
+				message.ChannelID = event.ChannelId
+				message.UserID = event.UserId
+				message.Text = event.Text
+
+				//Convert timestamp string to float
+				tsFloat, err := strconv.ParseFloat(event.Timestamp, 64)
+				if err != nil {
+					fmt.Printf("ERROR CONVERTING TIMESTAMP JIM, ERROR!: %s\n\n", err)
+				}
+
+				message.Timestamp = int(tsFloat)
+
+				//Get channel name from slack API
+				channelInfo, err := a.Slack.GetChannelInfo(message.ChannelID)
+				if err != nil {
+					fmt.Printf("GetChannelInfo error: %s", err)
+				}
+
+				message.ChannelName = channelInfo.Name
+
+				//Get user name from slack API
+				userInfo, err := a.Slack.GetUserInfo(message.UserID)
+				if err != nil {
+					fmt.Printf("GetUserInfo error: %s", err)
+				}
+
+				if userInfo.RealName != "" {
+					message.UserName = strings.Split(userInfo.RealName, " ")[0]
+				} else {
+					message.UserName = userInfo.Name
+				}
+
+				fmt.Printf("Complete message: %s", message)
+
+				//Check if activity exists, if not -> then save
+				searchActivity, err := a.Storage.SearchActivity([]string{message.Text})
+				if err != nil {
+					fmt.Printf("Error searching activity: %s \n", err)
+				}
+				if len(searchActivity) != 0 {
+					fmt.Printf("Quote already exists, not saving.\n\n")
+				} else {
+					a.Storage.SaveActivity(message)
+				}
+
 			case *slack.PresenceChangeEvent:
 				event := msg.Data.(*slack.PresenceChangeEvent)
 				fmt.Printf("Presence Change: %v\n", event)
@@ -67,13 +119,14 @@ func (a *AppContext) Monitor() {
 				quote.ChannelID = event.Item.Channel
 				quote.UserID = event.Item.Message.UserId
 
-				fmt.Printf("channelID: %#v\n\n", event.Item.Channel)
+				//Get channel name from slack API
 				channelInfo, err := a.Slack.GetChannelInfo(event.Item.Channel)
 				if err != nil {
 					fmt.Printf("GetChannelInfo error: %s", err)
 				}
-
 				quote.ChannelName = channelInfo.Name
+
+				//Get user name from slack API
 				userInfo, err := a.Slack.GetUserInfo(event.Item.Message.UserId)
 				if err != nil {
 					fmt.Printf("GetUserInfo error: %s", err)
@@ -85,6 +138,7 @@ func (a *AppContext) Monitor() {
 					quote.UserName = userInfo.Name
 				}
 
+				//Check if quote exists, if not -> then save
 				searchQuote, err := a.Storage.SearchQuotes([]string{quote.Text})
 				if err != nil {
 					fmt.Printf("Error searching quote: %s \n", err)

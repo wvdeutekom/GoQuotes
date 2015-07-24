@@ -78,6 +78,12 @@ func LoadConfig(configFile string) *Config {
 	return &cfg
 }
 
+func SetDefaultHeaders(c *echo.Context) {
+
+	//Add header for angular CORS support
+	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func FormatResponse(status string, data interface{}) Response {
 
 	return Response{
@@ -103,9 +109,10 @@ func Route(e *echo.Echo, a *AppContext) {
 	e.Get("/slack/searchQuote", a.SearchQuote)
 
 	//Activity feed
-	e.Post("/activity", a.NewActivity)
-	e.Get("/activity", a.GetActivities)
-	e.Delete("/activity/:id", a.DeleteActivity)
+	e.Post("/activities", a.NewActivity)
+	e.Get("/activities", a.GetActivities)
+	e.Get("/activities/:id", a.FindOneActivity)
+	e.Delete("/activities/:id", a.DeleteActivity)
 
 	//Debug
 	e.Get("/debug", a.SendQuote)

@@ -40,6 +40,10 @@ func main() {
 	if err != nil {
 		fmt.Print(err)
 	}
+	_, err = r.DB(config.Database.Name).TableCreate("activities").RunWrite(session)
+	if err != nil {
+		fmt.Print(err)
+	}
 
 	// Middleware
 	echo.Use(mw.Logger())
