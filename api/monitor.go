@@ -91,7 +91,7 @@ func (a *AppContext) Monitor() {
 						fmt.Printf("url element: %s\n", element)
 
 						//Check if activity exists, if not -> then save
-						searchActivity, err := a.Storage.SearchActivity([]string{element})
+						searchActivity, err := a.Storage.SearchActivities([]string{element})
 						if err != nil {
 							fmt.Printf("Error searching activity: %s \n", err)
 						}

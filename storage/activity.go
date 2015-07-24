@@ -90,7 +90,7 @@ func (s *Storage) DeleteActivity(id string) (*Activity, error) {
 	return &oldValueActivity, nil
 }
 
-func (s *Storage) SearchActivity(searchStrings []string) ([]Activity, error) {
+func (s *Storage) SearchActivities(searchStrings []string) ([]Activity, error) {
 
 	fmt.Printf("Searchterms: %s\n", searchStrings)
 
