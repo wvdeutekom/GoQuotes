@@ -55,7 +55,7 @@ func (a *AppContext) Monitor() {
 					message := new(storage.Activity)
 					message.ChannelID = event.ChannelId
 					message.UserID = event.UserId
-					message.Text = event.Text
+					message.Text = a.ReplaceTags(event.Text, "<(.*?)>")
 
 					//Convert timestamp string to float
 					tsFloat, err := strconv.ParseFloat(event.Timestamp, 64)
